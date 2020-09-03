@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if [ ! -f /repo/localhost.db.tar.zst ]; then
-    repo-add -n /repo/localhost.db.tar.zst;
+if [ ! -f /repo/abs_cd-local.db.tar.zst ]; then
+    repo-add -n /repo/abs_cd-local.db.tar.zst;
 fi
 
 python manage.py makemigrations
