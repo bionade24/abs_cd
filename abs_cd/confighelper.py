@@ -6,7 +6,7 @@ class Confighelper:
 
     def __init__(self):
         self.setting_path = os.path.join(os.curdir, 'data', 'settings.ini')
-        template_path = os.path.join(os.curdir, 'data', 'settings.ini.template')
+        template_path = os.path.join(os.curdir, 'settings.ini.template')
         if not os.path.isfile(self.setting_path):
             if os.path.isfile(template_path):
                 shutil.copyfile(template_path, self.setting_path)

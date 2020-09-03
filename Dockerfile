@@ -9,6 +9,7 @@ COPY abs_cd/ /opt/abs_cd/abs_cd/
 COPY cd_manager/ /opt/abs_cd/cd_manager/
 COPY makepkg/ /opt/abs_cd/makepkg/
 COPY manage.py /opt/abs_cd/
+COPY settings.ini.template /opt/abs_cd/settings.ini.template
 COPY pacman.conf /etc/pacman.conf
 COPY startup.sh /opt/abs_cd
 VOLUME /repo
