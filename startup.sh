@@ -7,7 +7,7 @@ fi
 python manage.py makemigrations
 python manage.py migrate
 
-if ! grep -r "DEBUG = True"; then
+if ! grep -r -i -q "debug = true" data/settings.ini; then
     #Start with gunicorn
     python manage.py collectstatic
     gunicorn --bind :8000 --workers 3 abs_cd.wsgi:application
