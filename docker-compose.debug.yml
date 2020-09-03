@@ -1,0 +1,20 @@
+version: '3.4'
+
+services:
+  abs_cd_debug:
+    image: abs_cd
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - '/var/run/docker.sock:/var/run/docker.sock'
+    - '/var/local/abs_cd/data:/opt/abs_cd/data'
+    - 'local-repo:/repo'
+    - '/var/local/abs_cd/packages:/var/packages'
+    entrypoint: /bin/bash
+    command: -c "repo-add -n /repo/localhost.db.tar.zst && pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --nothreading --noreload"
+    ports:
+      - 8000:8000
+      - 5678:5678
+volumes:
+  local-repo:

@@ -1,0 +1,4 @@
+data/settings.ini
+data/db.sqlite3
+staticfiles/
+**/migrations/

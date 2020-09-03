@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  abs_cd:
+    image: abs_cd
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure:3
+    ports:
+      - '8000:8000'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/local/abs_cd/data:/opt/abs_cd/data'
+      - '/srv/abs_cd/staticfiles:/opt/abs_cd/staticfiles'
+      - 'local-repo:/repo'
+      - '/var/local/abs_cd/packages:/var/packages'
+volumes:
+  local-repo:

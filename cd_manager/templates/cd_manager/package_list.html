@@ -1,0 +1,37 @@
+{% extends 'base_abs-cd.html' %}
+
+{% block style %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'cd_manager/package_list.css' %}">
+{% endblock style %}
+
+{% block content %}
+    <h3 align="center">Package build status overview</h3>
+    </br>
+    {% if package_list %}
+        <table>
+                <tr>
+                    <th class="pkgname">Package name</th>
+                    <th>Build status</th>
+                    <th>Last Built</th>
+                </tr>
+            {% for package in package_list %}
+                <tr>
+                    <td class="pkgname"><a href="{% url 'cd_manager:package' package.name %}">{{ package.name}}</a></td>
+                    <td> <span style=
+                    {% if package.build_status == 'SUCCESS' %}
+                        "background: green"
+                    {% elif package.build_status == 'FAILURE' %}
+                         "background: red"
+                    {% else %}
+                        "background: black; color: white"
+                    {% endif %}
+                    >{{ package.build_status }}</span></td>
+                    <td>{{ package.build_date|date:'d.n.Y H:i' }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p style="color: red">There are no package repos available or indexed.</p>
+    {% endif %}
+{% endblock content %}

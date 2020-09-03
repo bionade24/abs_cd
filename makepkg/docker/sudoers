@@ -1,0 +1,2 @@
+root ALL=(ALL) ALL
+mkpkg ALL=(ALL) NOPASSWD: ALL

@@ -1,0 +1,33 @@
+{% extends 'base_abs-cd.html' %}
+
+{% autoescape on %}
+{% block title %}<title> Build Status: {{ package.name }} </title>{% endblock title %}
+
+{% block style %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'cd_manager/package.css' %}">
+{% endblock style %}
+
+{% block content %}
+</br>
+<h3>{{ package.name }}</h3>
+<p id="build_info"> Build Status: <span style=
+                    {% if package.build_status == 'SUCCESS' %}
+                        "background: green"
+                    {% elif package.build_status == 'FAILURE' %}
+                         "background: red"
+                    {% else %}
+                        "background: black; color: white"
+                    {% endif %}
+                    >{{ package.build_status }}</span> &emsp; &emsp;
+    Last Build Date: {{ package.build_date|date:'d.n.Y H:i' }}</p>
+<h5 id="bo_header">Build Output</h5>
+<div id="build_output">
+{% if package.build_output %}
+{{ package.build_output|linebreaksbr}}
+{% else %}
+There is no build output available.
+{% endif %}
+</div>
+{% endblock content %}
+{% endautoescape %}%}
