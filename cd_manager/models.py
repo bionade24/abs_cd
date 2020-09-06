@@ -19,18 +19,19 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
-    def run_cd(self):
-        package_src = os.path.join('/var/packages', 'self.name')
+    def cloned_repo_check(self):
+        package_src = os.path.join('/var/packages', self.name)
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
+
+    def run_cd(self):
+        self.cloned_repo_check()
         PackageSystem().build(self)
         if self.build_status is 'SUCCESS' and self.aur_push:
             self.push_to_aur()
 
     def rebuildtree(self):
-        package_src = os.path.join('/var/packages', 'self.name')
-        if not os.path.exists(package_src):
-            Repo.clone_from(self.repo_url, package_src)
+        self.cloned_repo_check
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             try:
