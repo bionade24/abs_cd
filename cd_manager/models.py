@@ -24,6 +24,8 @@ class Package(models.Model):
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
         PackageSystem().build(self)
+        if self.build_status is 'SUCCESS' and self.aur_push:
+            self.push_to_aur()
 
     def rebuildtree(self):
         package_src = os.path.join('/var/packages', 'self.name')
@@ -37,3 +39,16 @@ class Package(models.Model):
             except Package.DoesNotExist:
                 pass
         self.run_cd()
+
+    def push_to_aur(self):
+        try:
+            pkg_repo = Repo(path=os.path.join(
+                '/var/packages', self.name)).remote(name='aur')
+        except ValueError:
+            pkg_repo = Repo(path=self.path).create_remote(
+                'aur', "aur@aur.archlinux.org:/{0}.git".format(self.name))
+        pkg_repo.fetch()
+        try:
+            pkg_repo.push()
+        except BaseException as e:
+            print(e)
