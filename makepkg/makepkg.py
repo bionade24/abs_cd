@@ -24,23 +24,22 @@ class PackageSystem:
             path = os.path.join(os.getcwd(), 'cd_manager/makepkg/docker')
             PackageSystem._docker_conn.images.build(
                 tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'))
-        self._repo = PackageSystem._docker_conn.volumes.get("abs_cd_local-repo")
+        self._repo = PackageSystem._docker_conn.volumes.get(
+            "abs_cd_local-repo")
 
     # package should be type cd_manager.models.Package()
     def build(self, package):
-        old_pkgs = glob.glob(f"/repo/{package.name}-?.*-?-*.pkg.tar.*")
         output = None
         try:
             output = PackageSystem._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
-                                                                #TODO: Don't hardcode host
+                                                               # TODO: Don't hardcode host
                                                                mem_limit='8G', memswap_limit='8G', cpu_shares=128, volumes={f'/var/local/abs_cd/packages/{package.name}':
                                                                                                                             {'bind': '/src', 'mode': 'ro'}, 'abs_cd_local-repo': {'bind': '/repo', 'mode': 'rw'}},
                                                                name=f'mkpkg_{package.name}')
             package.build_status = 'SUCCESS'
-            cur_pkgs = glob.glob(f"/repo/{package.name}-?.*-?-*.pkg.tar.*")
-            new_pkgs = list(set(cur_pkgs)-set(old_pkgs))
+            new_pkgs = glob.glob(f"/repo/{package.name}-?.*-?-*.pkg.tar.*")
             try:
-                subprocess.run([REPO_ADD_BIN, '-R', '-n', 'abs_cd-local.db.tar.zst']
+                subprocess.run([REPO_ADD_BIN, '-R', '-q', 'abs_cd-local.db.tar.zst']
                                + new_pkgs, check=True, cwd='/repo')
             except subprocess.CalledProcessError as e:
                 print(e.stdout, file=sys.stderr)

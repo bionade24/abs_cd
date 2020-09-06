@@ -1,4 +1,5 @@
 import os
+from cd_manager.alpm import ALPMHelper
 from django.db import models
 from makepkg.makepkg import PackageSystem
 from git import Repo
@@ -25,4 +26,14 @@ class Package(models.Model):
         PackageSystem().build(self)
 
     def rebuildtree(self):
-        pass
+        package_src = os.path.join('/var/packages', 'self.name')
+        if not os.path.exists(package_src):
+            Repo.clone_from(self.repo_url, package_src)
+        deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
+        for dep in deps:
+            try:
+                dep_pkgobj = Package.objects.get(name=dep)
+                dep_pkgobj.rebuildtree()
+            except Package.DoesNotExist:
+                pass
+        self.run_cd()

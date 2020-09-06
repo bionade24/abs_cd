@@ -49,4 +49,7 @@ class PackageAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(f'/cd_manager/{pkg.name}')
 
     def rebuildtree(self, request, package_name, *args, **kwargs):
-        pass
+        pkg = Package.objects.get(name=package_name)
+        Process(target=pkg.rebuildtree).start()
+        #Generate some tree overview
+        return HttpResponseRedirect(f'/cd_manager/{pkg.name}')
