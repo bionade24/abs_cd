@@ -136,7 +136,6 @@ class MakepkgContainer:
             pacman_process = subprocess.Popen(arguments)
             pacman_process.wait()
         flags = None
-        built_packages = []
 
         if not self.rest:
             flags = self.__restDefaults.split()
