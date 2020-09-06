@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.conf.urls import url
 from django.http.response import HttpResponseRedirect
+from multiprocessing import Process
 
 # Register your models here.
 
@@ -43,9 +44,9 @@ class PackageAdmin(admin.ModelAdmin):
     package_actions.allow_tags = True
 
     def run_cd(self, request, package_name, *args, **kwargs):
-        p = Package.objects.get(name=package_name)
-        p.run_cd()
-        return HttpResponseRedirect(f'/cd_manager/{p.name}')
+        pkg = Package.objects.get(name=package_name)
+        Process(target=pkg.run_cd).start()
+        return HttpResponseRedirect(f'/cd_manager/{pkg.name}')
 
     def rebuildtree(self, request, package_name, *args, **kwargs):
         pass
