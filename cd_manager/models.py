@@ -19,7 +19,7 @@ class Package(models.Model):
         return self.name
 
     def run_cd(self):
-        package_src = f"/var/packages/{self.name}"
+        package_src = os.path.join('/var/packages', 'self.name')
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
         PackageSystem().build(self)
