@@ -1,6 +1,6 @@
 import pyalpm
 import os
-from cd_manager import pkgbuild
+from cd_manager.pkgbuild import SRCINFO
 from pycman.config import PacmanConfig
 
 
@@ -32,13 +32,13 @@ class ALPMHelper:
         srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
         deps = []
         if os.path.isfile(srcinfo_path):
-            srcinfo = pkgbuild.SRCINFO(srcinfo_path).content
+            srcinfo = SRCINFO(srcinfo_path)
             if rundeps:
-                deps += srcinfo.get('depends')
+                deps += srcinfo.getrundeps()
             elif makedeps:
-                deps += srcinfo.get('makedepends')
+                deps += srcinfo.getmakedeps()
             elif checkdeps:
-                deps += srcinfo.get('checkdepends')
+                deps += srcinfo.getcheckdeps()
         else:
             pkg = self.get_pkg_from_syncdbs(pkgname=pkgname)
             if rundeps:

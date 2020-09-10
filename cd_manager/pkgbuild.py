@@ -1,4 +1,4 @@
-""" Thankfully stolen from python-pkgbuild https://github.com/z3ntu/python-pkgbuild/
+""" Thankfully stolen and extended from python-pkgbuild https://github.com/z3ntu/python-pkgbuild/
     File under MIT License"""
 
 import re
@@ -34,6 +34,21 @@ class SRCINFO:
                 else:
                     return_dict[key].append(value)  # append to array
         self.content = return_dict
+
+    def getcontent(self):
+        return self.content
+
+    def getrundeps(self):
+        rundeps = self.getcontent().get('depends')
+        return rundeps if not None else []
+
+    def getmakedeps(self):
+        makedeps = self.getcontent().get('makedepends')
+        return makedeps if not None else []
+
+    def getcheckdeps(self):
+        checkdeps = self.getcontent().get('checkdepends')
+        return checkdeps if not None else []
 
 
 def parse_source_field(source_text, source_parts):
