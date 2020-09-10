@@ -11,7 +11,7 @@ COPY makepkg/ /opt/abs_cd/makepkg/
 COPY manage.py /opt/abs_cd/
 COPY settings.ini.template /opt/abs_cd/settings.ini.template
 COPY pacman.conf /etc/pacman.conf
-COPY config /opt/abs_cd/.ssh
+COPY config /root/.ssh
 COPY startup.sh /opt/abs_cd
 VOLUME /repo
 VOLUME /var/packages
