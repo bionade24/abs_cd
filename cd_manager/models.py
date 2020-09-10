@@ -30,16 +30,18 @@ class Package(models.Model):
         if self.build_status is 'SUCCESS' and self.aur_push:
             self.push_to_aur()
 
-    def rebuildtree(self):
+    def rebuildtree(self, built_packages=[]):
         self.cloned_repo_check
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             try:
                 dep_pkgobj = Package.objects.get(name=dep)
-                dep_pkgobj.rebuildtree()
+                dep_pkgobj.rebuildtree(built_packages)
             except Package.DoesNotExist:
                 pass
-        self.run_cd()
+        if not self.name in built_packages:
+            self.run_cd()
+            built_packages.append(self.name)
 
     def push_to_aur(self):
         try:
