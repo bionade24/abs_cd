@@ -39,7 +39,7 @@ class PackageSystem:
             package.build_status = 'SUCCESS'
             new_pkgs = glob.glob(f"/repo/{package.name}-?.*-?-*.pkg.tar.*")
             if len(new_pkgs) == 0:
-                new_pkgs = glob.iglob(f"/repo/{package.name}-?:?.*-?-*.pkg.tar.*")
+                new_pkgs = glob.glob(f"/repo/{package.name}-?:?.*-?-*.pkg.tar.*")
             try:
                 subprocess.run([REPO_ADD_BIN, '-R', '-q', 'abs_cd-local.db.tar.zst']
                                + new_pkgs, check=True, cwd='/repo')
