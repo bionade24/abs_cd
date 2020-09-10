@@ -54,4 +54,4 @@ class Package(models.Model):
         try:
             pkg_repo.push()
         except BaseException as e:
-            print(e)
+            print(self.name + " has AUR push problems")
