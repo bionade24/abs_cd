@@ -1,0 +1,3 @@
+Host aur.archlinux.org
+  IdentityFile ~/data/aur
+  User aur
