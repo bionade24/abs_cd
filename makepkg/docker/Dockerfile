@@ -7,6 +7,7 @@ RUN pacman --noconfirm -Syuq --needed base-devel python boost cmake
 RUN useradd -m -d /build -s /bin/bash mkpkg
 COPY sudoers /etc/sudoers
 COPY pacman.conf /etc/pacman.conf
+COPY makepkg.conf /etc/makepkg.conf
 WORKDIR /build
 VOLUME "/src"
 VOLUME "/repo"
