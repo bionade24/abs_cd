@@ -1,3 +1,3 @@
 Host aur.archlinux.org
-  IdentityFile ~/data/aur
+  IdentityFile /opt/abs_cd/data/aur
   User aur
