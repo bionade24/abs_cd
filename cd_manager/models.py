@@ -7,7 +7,7 @@ from git import Repo
 
 class Package(models.Model):
     BuildStatus = models.TextChoices(
-        'BuildStatus', 'SUCCESS FAILURE NOT_BUILT')
+        'BuildStatus', 'SUCCESS FAILURE NOT_BUILT BUILDING')
     name = models.CharField(max_length=100, primary_key=True)
     repo_url = models.CharField(max_length=100)
     build_status = models.CharField(choices=BuildStatus.choices,

@@ -30,6 +30,7 @@ class PackageSystem:
     # package should be type cd_manager.models.Package()
     def build(self, package):
         output = None
+        package.build_status = 'BUILDING'
         try:
             output = PackageSystem._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
                                                                # TODO: Don't hardcode host
