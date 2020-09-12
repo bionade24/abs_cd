@@ -17,7 +17,7 @@
                     {% elif package.build_status == 'FAILURE' %}
                          "background: red"
                     {% else %}
-                        "background: black; color: white"
+                        "background: silver; color: black"
                     {% endif %}
                     >{{ package.build_status }}</span> &emsp; &emsp;
     Last Build Date: {{ package.build_date|date:'d.n.Y H:i' }}</p>
