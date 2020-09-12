@@ -31,6 +31,8 @@ class PackageSystem:
     def build(self, package):
         output = None
         package.build_status = 'BUILDING'
+        package.build_output = None
+        package.save()
         try:
             output = PackageSystem._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
                                                                # TODO: Don't hardcode host
