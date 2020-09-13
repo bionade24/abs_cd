@@ -2,6 +2,7 @@ import docker
 import os
 import glob
 import subprocess
+from wcmatch import wcmatch
 from datetime import datetime
 import sys
 
@@ -40,9 +41,10 @@ class PackageSystem:
                                                                                                                             {'bind': '/src', 'mode': 'ro'}, 'abs_cd_local-repo': {'bind': '/repo', 'mode': 'rw'}},
                                                                name=f'mkpkg_{package.name}')
             package.build_status = 'SUCCESS'
-            new_pkgs = glob.glob(f"/repo/{package.name}-?.*-?-*.pkg.tar.*")
+            new_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
             if len(new_pkgs) == 0:
-                new_pkgs = glob.glob(f"/repo/{package.name}-?:?.*-?-*.pkg.tar.*")
+                new_pkgs = glob.glob(
+                    f"/repo/*.pkg.tar.*")
             try:
                 subprocess.run([REPO_ADD_BIN, '-R', '-q', 'abs_cd-local.db.tar.zst']
                                + new_pkgs, check=True, cwd='/repo')
