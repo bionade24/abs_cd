@@ -1,7 +1,9 @@
 import os
 from cd_manager.alpm import ALPMHelper
+from abs_cd import settings
 from django.db import models
 from makepkg.makepkg import PackageSystem
+from django.utils.datetime_safe import datetime
 from git import Repo
 
 
@@ -29,6 +31,22 @@ class Package(models.Model):
         PackageSystem().build(self)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
+
+    def build(self):
+        self.cloned_repo_check
+        deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
+        for dep in deps:
+            try:
+                dep_pkgobj = Package.objects.get(name=dep)
+                now = datetime.now()
+                if dep_pkgobj.build_status != 'SUCCESS' or dep_pkgobj.build_date < now.replace(day=now.day-7):
+                    dep_pkgobj.build()
+                else:
+                    print(
+                        f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
+            except Package.DoesNotExist:
+                pass
+        self.run_cd()
 
     def rebuildtree(self, built_packages=[]):
         self.cloned_repo_check

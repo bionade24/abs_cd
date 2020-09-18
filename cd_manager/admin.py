@@ -45,7 +45,7 @@ class PackageAdmin(admin.ModelAdmin):
 
     def run_cd(self, request, package_name, *args, **kwargs):
         pkg = Package.objects.get(name=package_name)
-        Process(target=pkg.run_cd).start()
+        Process(target=pkg.build).start()
         return HttpResponseRedirect(f'/cd_manager/{pkg.name}')
 
     def rebuildtree(self, request, package_name, *args, **kwargs):
