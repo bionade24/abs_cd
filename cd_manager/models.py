@@ -27,7 +27,7 @@ class Package(models.Model):
     def run_cd(self):
         self.cloned_repo_check()
         PackageSystem().build(self)
-        if self.build_status is 'SUCCESS' and self.aur_push:
+        if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
 
     def rebuildtree(self, built_packages=[]):
