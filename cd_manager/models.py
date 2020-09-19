@@ -32,10 +32,22 @@ class Package(models.Model):
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
 
+    @staticmethod
+    def sanitize_dep(dep):
+        # TODO: Proper version checking
+        if '>=' in dep:
+            dep = dep.split('>=')[0]
+        elif '<=' in dep:
+            dep = dep.split('<=')[0]
+        elif '==' in dep:
+            dep = dep.split('==')[0]
+        return dep
+
     def build(self):
         self.cloned_repo_check
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
+            dep = self.sanitize_dep(dep)
             try:
                 dep_pkgobj = Package.objects.get(name=dep)
                 now = datetime.now()
@@ -52,6 +64,7 @@ class Package(models.Model):
         self.cloned_repo_check
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
+            dep = self.sanitize_dep(dep)
             try:
                 dep_pkgobj = Package.objects.get(name=dep)
                 dep_pkgobj.rebuildtree(built_packages)
