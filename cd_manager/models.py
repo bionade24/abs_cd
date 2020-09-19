@@ -44,7 +44,7 @@ class Package(models.Model):
         return dep
 
     def build(self):
-        self.cloned_repo_check
+        self.cloned_repo_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             dep = self.sanitize_dep(dep)
@@ -61,7 +61,7 @@ class Package(models.Model):
         self.run_cd()
 
     def rebuildtree(self, built_packages=[]):
-        self.cloned_repo_check
+        self.cloned_repo_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             dep = self.sanitize_dep(dep)
