@@ -14,7 +14,7 @@ class PackageAdmin(admin.ModelAdmin):
     list_display = ('name', 'build_status',
                     'build_date',
                     'package_actions')
-    search_fields = ("last_name__startswith", )
+    search_fields = ("name", )
     ordering = ('name', )
 
     def get_urls(self):
