@@ -75,11 +75,12 @@ class Package(models.Model):
             built_packages.append(self.name)
 
     def push_to_aur(self):
+        path = os.path.join(
+            '/var/packages', self.name)
         try:
-            pkg_repo = Repo(path=os.path.join(
-                '/var/packages', self.name)).remote(name='aur')
+            pkg_repo = Repo(path=path).remote(name='aur')
         except ValueError:
-            pkg_repo = Repo(path=self.path).create_remote(
+            pkg_repo = Repo(path=path).create_remote(
                 'aur', "aur@aur.archlinux.org:/{0}.git".format(self.name))
         pkg_repo.fetch()
         try:
