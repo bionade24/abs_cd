@@ -148,7 +148,8 @@ class MakepkgContainer:
             os.makedirs(gnupg, mode=0o700, exist_ok=True)
             self.change_user_or_gid(
                 build_user_uid, pwd.getpwnam("mkpkg").pw_gid, "/build")
-            self.append_to_file(gnupg + "/gpg.conf", "\nauto-key-retrieve\n")
+            self.append_to_file(gnupg + "/gpg.conf", "keyserver-options auto-key-retrieve\n\
+                auto-key-locate hkps://keyserver.ubuntu.com\n")
             self.change_permissions_recursively(gnupg, 0o700)
             self.change_permissions_recursively(gnupg + "/gpg.conf", 0o600)
             self.change_user_or_gid(pwd.getpwnam(
