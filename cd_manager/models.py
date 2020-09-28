@@ -39,8 +39,8 @@ class Package(models.Model):
             dep = dep.split('>=')[0]
         elif '<=' in dep:
             dep = dep.split('<=')[0]
-        elif '==' in dep:
-            dep = dep.split('==')[0]
+        elif '=' in dep:
+            dep = dep.split('=')[0]
         return dep
 
     def build(self):
