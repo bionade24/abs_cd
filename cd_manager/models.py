@@ -65,11 +65,13 @@ class Package(models.Model):
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             dep = self.sanitize_dep(dep)
-            try:
-                dep_pkgobj = Package.objects.get(name=dep)
-                dep_pkgobj.rebuildtree(built_packages)
-            except Package.DoesNotExist:
-                pass
+            #Avoiding max recursion limit
+            if not dep in built_packages:
+                try:
+                    dep_pkgobj = Package.objects.get(name=dep)
+                    dep_pkgobj.rebuildtree(built_packages)
+                except Package.DoesNotExist:
+                    pass
         if not self.name in built_packages:
             self.run_cd()
             built_packages.append(self.name)
