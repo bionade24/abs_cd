@@ -3,7 +3,7 @@ from cd_manager.alpm import ALPMHelper
 from abs_cd import settings
 from django.db import models
 from makepkg.makepkg import PackageSystem
-from django.utils.datetime_safe import datetime
+from django.utils.datetime_safe import timezone
 from datetime import timedelta
 from git import Repo
 
@@ -51,7 +51,7 @@ class Package(models.Model):
             dep = self.sanitize_dep(dep)
             try:
                 dep_pkgobj = Package.objects.get(name=dep)
-                one_week_ago = datetime.now() - timedelta(days=7)
+                one_week_ago = timezone.now() - timedelta(days=7)
                 if dep_pkgobj.build_status != 'SUCCESS' or dep_pkgobj.build_date < one_week_ago:
                     dep_pkgobj.build()
                 else:
