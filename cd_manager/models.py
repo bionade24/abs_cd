@@ -3,7 +3,7 @@ from cd_manager.alpm import ALPMHelper
 from abs_cd import settings
 from django.db import models
 from makepkg.makepkg import PackageSystem
-from django.utils.datetime_safe import timezone
+from django.utils import timezone
 from datetime import timedelta
 from git import Repo
 
