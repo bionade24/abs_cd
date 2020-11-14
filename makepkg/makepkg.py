@@ -30,6 +30,9 @@ class PackageSystem:
 
     # package should be type cd_manager.models.Package()
     def build(self, package):
+        old_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
+        for path in old_pkgs:
+            os.remove(path)
         output = None
         package.build_status = 'BUILDING'
         package.build_output = None
@@ -46,7 +49,7 @@ class PackageSystem:
                 new_pkgs = glob.glob(
                     f"/repo/*.pkg.tar.*")
             try:
-                subprocess.run([REPO_ADD_BIN, '-R', '-q', 'abs_cd-local.db.tar.zst']
+                subprocess.run([REPO_ADD_BIN, '-q', 'abs_cd-local.db.tar.zst']
                                + new_pkgs, check=True, cwd='/repo')
             except subprocess.CalledProcessError as e:
                 print(e.stdout, file=sys.stderr)
