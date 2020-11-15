@@ -1,4 +1,5 @@
 import os
+import shutil
 from cd_manager.alpm import ALPMHelper
 from abs_cd import settings
 from django.db import models
@@ -22,13 +23,24 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
-    def cloned_repo_check(self):
+    def repo_status_check(self):
         package_src = os.path.join('/var/packages', self.name)
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
+        else:
+            try:
+                repo = Repo(path=package_src)
+                assert not repo.bare
+                remote = repo.remote("origin")
+                assert remote.exists()
+                remote.pull()
+            except AssertionError:
+                shutil.rmtree(package_src)
+                self.repo_status_check()
+
 
     def run_cd(self):
-        self.cloned_repo_check()
+        self.repo_status_check()
         PackageSystem().build(self)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
@@ -45,7 +57,7 @@ class Package(models.Model):
         return dep
 
     def build(self):
-        self.cloned_repo_check()
+        self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             dep = self.sanitize_dep(dep)
@@ -62,7 +74,7 @@ class Package(models.Model):
         self.run_cd()
 
     def rebuildtree(self, built_packages=[]):
-        self.cloned_repo_check()
+        self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         for dep in deps:
             dep = self.sanitize_dep(dep)
