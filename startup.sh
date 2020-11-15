@@ -9,7 +9,7 @@ python manage.py migrate
 
 if ! grep -r -i -q "debug = true" data/settings.ini; then
     #Start with gunicorn
-    python manage.py collectstatic
+    python manage.py collectstatic --noinput
     gunicorn --bind :8000 --workers 3 abs_cd.wsgi:application
     else
     echo "WARNING: DEBUG is set to TRUE! Don't use this in production";
