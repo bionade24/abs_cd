@@ -1,9 +1,13 @@
 {% extends "admin/base.html" %}
 
+{% block styleshee
+
 {% block title %}{{'ABS_CD admin'}}{% endblock %}
 
 {% block branding %}
 <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ 'ArchBuildSystem Continues Delivery'}}</a></h1>
 {% endblock %}
+
+{% block extrastyle %}{{ block.super }}{% load static %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/abs_cd.css" %}" />{% endblock %}
 
 {% block nav-global %}{% endblock %}
