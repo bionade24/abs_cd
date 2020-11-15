@@ -1,5 +1,6 @@
 import os
 from cd_manager.alpm import ALPMHelper
+from cd_manager.recursion_helper import Recursionlimit
 from abs_cd import settings
 from django.db import models
 from makepkg.makepkg import PackageSystem
@@ -47,32 +48,34 @@ class Package(models.Model):
     def build(self):
         self.cloned_repo_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
-        for dep in deps:
-            dep = self.sanitize_dep(dep)
-            try:
-                dep_pkgobj = Package.objects.get(name=dep)
-                one_week_ago = timezone.now() - timedelta(days=7)
-                if dep_pkgobj.build_status != 'SUCCESS' or dep_pkgobj.build_date < one_week_ago:
-                    dep_pkgobj.build()
-                else:
-                    print(
-                        f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
-            except Package.DoesNotExist:
-                pass
+        with Recursionlimit(1500):
+            for dep in deps:
+                dep = self.sanitize_dep(dep)
+                try:
+                    dep_pkgobj = Package.objects.get(name=dep)
+                    one_week_ago = timezone.now() - timedelta(days=7)
+                    if dep_pkgobj.build_status != 'SUCCESS' or dep_pkgobj.build_date < one_week_ago:
+                        dep_pkgobj.build()
+                    else:
+                        print(
+                            f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
+                except Package.DoesNotExist:
+                    pass
         self.run_cd()
 
     def rebuildtree(self, built_packages=[]):
         self.cloned_repo_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
-        for dep in deps:
-            dep = self.sanitize_dep(dep)
-            #Avoiding max recursion limit
-            if not dep in built_packages:
-                try:
-                    dep_pkgobj = Package.objects.get(name=dep)
-                    dep_pkgobj.rebuildtree(built_packages)
-                except Package.DoesNotExist:
-                    pass
+        with Recursionlimit(1500):
+            for dep in deps:
+                dep = self.sanitize_dep(dep)
+                #Avoiding max recursion limit
+                if not dep in built_packages:
+                    try:
+                        dep_pkgobj = Package.objects.get(name=dep)
+                        dep_pkgobj.rebuildtree(built_packages)
+                    except Package.DoesNotExist:
+                        pass
         if not self.name in built_packages:
             self.run_cd()
             built_packages.append(self.name)
