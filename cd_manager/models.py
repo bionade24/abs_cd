@@ -60,7 +60,7 @@ class Package(models.Model):
     def build(self):
         self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
-        with Recursionlimit(1500):
+        with Recursionlimit(2000):
             for dep in deps:
                 dep = self.sanitize_dep(dep)
                 try:
@@ -78,7 +78,7 @@ class Package(models.Model):
     def rebuildtree(self, built_packages=[]):
         self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
-        with Recursionlimit(1500):
+        with Recursionlimit(2000):
             for dep in deps:
                 dep = self.sanitize_dep(dep)
                 #Avoiding max recursion limit
