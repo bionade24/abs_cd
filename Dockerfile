@@ -3,9 +3,11 @@ LABEL org.abs-cd=webcd_manager
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
 
-RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython
+RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython tar
 COPY requirements.txt /root
 RUN python3 -m pip install -r /root/requirements.txt
+RUN curl -LO https://github.com/lihaoyi/macropy/archive/v1.1.0b2.tar.gz && tar xf v1.1.0b2.tar.gz && python3 -m pip install macropy-1.1.0b2/.
+RUN pacman --noconfirm -Rsc tar
 RUN useradd -m -d /opt/abs_cd -s /bin/sh abs_cd
 RUN mkdir /root/.ssh
 COPY abs_cd/ /opt/abs_cd/abs_cd/

@@ -7,6 +7,8 @@ from makepkg.makepkg import PackageSystem
 from django.utils import timezone
 from datetime import timedelta
 from git import Repo
+import macropy.activate
+from macropy.experimental.tco import macros, tco
 
 
 class Package(models.Model):
@@ -56,6 +58,7 @@ class Package(models.Model):
             dep = dep.split('=')[0]
         return dep
 
+    @tco
     def build(self):
         self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
@@ -73,6 +76,7 @@ class Package(models.Model):
                 pass
         self.run_cd()
 
+    @tco
     def rebuildtree(self, built_packages=[]):
         self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
