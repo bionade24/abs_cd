@@ -8,6 +8,7 @@ from makepkg.makepkg import PackageSystem
 from django.utils import timezone
 from datetime import timedelta
 from git import Repo
+from git.exc import GitCommandError
 
 
 class Package(models.Model):
@@ -38,6 +39,8 @@ class Package(models.Model):
             except AssertionError:
                 shutil.rmtree(package_src)
                 self.repo_status_check()
+            except GitCommandError as e:
+                print(package_src + "\n" + e.stderr)
 
 
     def run_cd(self):
