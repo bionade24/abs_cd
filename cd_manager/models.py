@@ -30,6 +30,10 @@ class Package(models.Model):
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
         else:
+            def redownload():
+                shutil.rmtree(package_src)
+                self.repo_status_check()
+
             try:
                 repo = Repo(path=package_src)
                 assert not repo.bare
@@ -37,10 +41,10 @@ class Package(models.Model):
                 assert remote.exists()
                 remote.pull()
             except AssertionError:
-                shutil.rmtree(package_src)
-                self.repo_status_check()
+                redownload()
             except GitCommandError as e:
                 print(package_src + "\n" + e.stderr)
+                redownload()
 
 
     def run_cd(self):
@@ -84,7 +88,7 @@ class Package(models.Model):
         with Recursionlimit(2000):
             for dep in deps:
                 dep = self.sanitize_dep(dep)
-                #Avoiding max recursion limit
+                # Avoiding max recursion limit
                 if not dep in built_packages:
                     try:
                         dep_pkgobj = Package.objects.get(name=dep)
