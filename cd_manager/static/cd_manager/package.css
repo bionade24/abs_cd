@@ -1,13 +1,4 @@
-#build_output {
-    align-self: center;
-    text-align: left;
-    background: gray;
-    padding: 0.5em;
-    margin-left: 4em;
-    margin-right: 16em
-}
-
-#aur_push_output {
+.console_output {
     align-self: center;
     text-align: left;
     background: gray;
