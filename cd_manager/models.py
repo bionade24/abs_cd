@@ -53,6 +53,10 @@ class Package(models.Model):
         PackageSystem().build(self)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
+        else:
+            if not self.aur_push and self.aur_push_output:
+                self.aur_push_output = None
+                self.save()
 
     @staticmethod
     def sanitize_dep(dep):
@@ -110,8 +114,11 @@ class Package(models.Model):
                 'aur', "aur@aur.archlinux.org:/{0}.git".format(self.name))
         pkg_repo.fetch()
         try:
-            pkg_repo.push()
-            self.aur_push_output = "SUCCESS"
-        except BaseException as e:
-            print(self.name + " has AUR push problems: " + e)
+            info = pkg_repo.push()[0]
+            self.aur_push_output = str(info.summary)
+        except GitCommandError as e:
+            print(self.name + " has AUR push problems: ")
             self.aur_push_output = str(e)
+        finally:
+            self.save()
+

@@ -22,20 +22,25 @@
                     >{{ package.build_status }}</span> &emsp; &emsp;
     Last Build Date: {{ package.build_date|date:'d.n.Y H:i' }}</p>
 <h5 id="bo_header">Build Output</h5>
-<div id="build_output">
+<div id="build_output" class="console_output">
 {% if package.build_output %}
 {{ package.build_output|linebreaksbr}}
 {% else %}
 There is no build output available.
 {% endif %}
 </div>
-<h5 id="bo_header">Aur push Output</h5>
-<div id="aur_push_output">
+
+{% if package.aur_push %}
+<h5 id="bo_header">Git push to AUR Output</h5>
+<div id="aur_push_output" class="console_output">
 {% if package.aur_push_output %}
 {{ package.aur_push_output|linebreaksbr}}
 {% else %}
 There is no aurpush output available.
 {% endif %}
 </div>
+{% endif %}
+
 {% endblock content %}
-{% endautoescape %}%}
+{% endautoescape %}
+
