@@ -29,5 +29,13 @@
 There is no build output available.
 {% endif %}
 </div>
+<h5 id="bo_header">Aur push Output</h5>
+<div id="aur_push_output">
+{% if package.aur_push_output %}
+{{ package.aur_push_output|linebreaksbr}}
+{% else %}
+There is no aurpush output available.
+{% endif %}
+</div>
 {% endblock content %}
 {% endautoescape %}%}

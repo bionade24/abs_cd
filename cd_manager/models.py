@@ -21,6 +21,7 @@ class Package(models.Model):
     build_date = models.DateTimeField(null=True, blank=True)
     build_output = models.TextField(null=True, blank=True)
     aur_push = models.BooleanField(default=False)
+    aur_push_output = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -110,5 +111,7 @@ class Package(models.Model):
         pkg_repo.fetch()
         try:
             pkg_repo.push()
+            self.aur_push_output = "SUCCESS"
         except BaseException as e:
-            print(self.name + " has AUR push problems")
+            print(self.name + " has AUR push problems: " + e)
+            self.aur_push_output = str(e)
