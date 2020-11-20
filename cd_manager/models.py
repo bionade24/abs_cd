@@ -40,6 +40,11 @@ class Package(models.Model):
                 assert not repo.bare
                 remote = repo.remote("origin")
                 assert remote.exists()
+                matched_url = None
+                for url in remote.urls:
+                    if url == self.repo_url:
+                        matched_url = url
+                assert matched_url
                 remote.pull()
             except AssertionError:
                 redownload()
