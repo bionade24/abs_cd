@@ -119,8 +119,8 @@ class Package(models.Model):
                 'aur', "aur@aur.archlinux.org:/{0}.git".format(self.name))
         pkg_repo.fetch()
         try:
-            info = pkg_repo.push()[0]
-            self.aur_push_output = str(info.summary)
+            info = pkg_repo.push()
+            self.aur_push_output = "\n".join([str(x.summary) for x in info])
         except GitCommandError as e:
             print(self.name + " has AUR push problems: ")
             self.aur_push_output = str(e)
