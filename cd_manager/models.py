@@ -74,7 +74,14 @@ class Package(models.Model):
             dep = dep.split('=')[0]
         return dep
 
-    def build(self):
+    def build(self, force_rebuild=False, built_packages=[]):
+        # As the dependency graph is not necessarily acyclic we have to make sure to check each node
+        # only once. Otherwise this might end up in an endless loop (meaning we will hit the
+        # recursion limit)
+        if self.name in built_packages:
+            return
+        built_packages.append(self.name)
+
         self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         with Recursionlimit(2000):
@@ -83,31 +90,20 @@ class Package(models.Model):
                 try:
                     dep_pkgobj = Package.objects.get(name=dep)
                     one_week_ago = timezone.now() - timedelta(days=7)
-                    if dep_pkgobj.build_status != 'SUCCESS' or dep_pkgobj.build_date < one_week_ago:
-                        dep_pkgobj.build()
+                    if dep_pkgobj.build_status != 'SUCCESS' or \
+                       dep_pkgobj.build_date < one_week_ago or \
+                       force_rebuild:
+                        built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages)
                     else:
                         print(
                             f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
                 except Package.DoesNotExist:
                     pass
         self.run_cd()
+        return built_packages
 
     def rebuildtree(self, built_packages=[]):
-        self.repo_status_check()
-        deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
-        with Recursionlimit(2000):
-            for dep in deps:
-                dep = self.sanitize_dep(dep)
-                # Avoiding max recursion limit
-                if not dep in built_packages:
-                    try:
-                        dep_pkgobj = Package.objects.get(name=dep)
-                        dep_pkgobj.rebuildtree(built_packages)
-                    except Package.DoesNotExist:
-                        pass
-        if not self.name in built_packages:
-            self.run_cd()
-            built_packages.append(self.name)
+        self.build(force_rebuild=True, build_packages=built_packages)
 
     def push_to_aur(self):
         path = os.path.join(
