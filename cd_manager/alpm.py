@@ -35,19 +35,19 @@ class ALPMHelper:
             srcinfo = SRCINFO(srcinfo_path)
             if rundeps:
                 deps += srcinfo.getrundeps()
-            elif makedeps:
+            if makedeps:
                 deps += srcinfo.getmakedeps()
-            elif checkdeps:
+            if checkdeps:
                 deps += srcinfo.getcheckdeps()
         else:
             pkg = self.get_pkg_from_syncdbs(pkgname=pkgname)
             if rundeps:
                 deps += pkg.depends
-            elif makedeps:
+            if makedeps:
                 deps += pkg.makedepends
-            elif checkdeps:
+            if checkdeps:
                 deps += pkg.checkdepends
-        return deps
+        return list(set(deps))
 
 
 class PackageNotFoundError(RuntimeError):

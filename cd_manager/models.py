@@ -103,7 +103,7 @@ class Package(models.Model):
         return built_packages
 
     def rebuildtree(self, built_packages=[]):
-        self.build(force_rebuild=True, build_packages=built_packages)
+        self.build(force_rebuild=True, built_packages=built_packages)
 
     def push_to_aur(self):
         path = os.path.join(
