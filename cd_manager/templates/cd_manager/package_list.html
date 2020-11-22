@@ -10,11 +10,20 @@
     </br>
     {% if package_list %}
         <table>
-                <tr>
-                    <th class="pkgname">Package name</th>
-                    <th>Build status</th>
-                    <th>Last Built</th>
-                </tr>
+		<tr>
+		{% for sort_link in sort_link_list %}
+			<th class="sort-link {{sort_link.attrs }}">
+				<a class = "pkglist_header" href="{{ sort_link.path }}">
+					<span class="{{ sort_link.indicator }}">
+    						{{ sort_link.title }}
+    						{% if sort_link.indicator == 'sort-asc' %}▲{% endif %}
+    						{% if sort_link.indicator == 'sort-desc' %}▼{% endif %}
+					</span>
+				</a>
+			</th>
+		{% endfor %}
+		</tr>
+		<tr>  </tr>
             {% for package in package_list %}
                 <tr>
                     <td class="pkgname"><a href="{% url 'cd_manager:package' package.name %}">{{ package.name}}</a></td>
