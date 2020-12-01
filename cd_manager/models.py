@@ -79,7 +79,7 @@ class Package(models.Model):
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
         # recursion limit)
         if self.name in built_packages:
-            return
+            return built_packages
         built_packages.append(self.name)
 
         self.repo_status_check()
