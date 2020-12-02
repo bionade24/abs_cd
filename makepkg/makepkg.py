@@ -2,9 +2,10 @@ import docker
 import os
 import glob
 import subprocess
-from wcmatch import wcmatch
-from datetime import datetime
 import sys
+from wcmatch import wcmatch
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
@@ -19,12 +20,18 @@ class PackageSystem:
                                                              version='auto', tls=False)
         else:
             print("Connection already established")
-        try:
-            PackageSystem._docker_conn.images.get('abs-cd/makepkg')
-        except docker.errors.ImageNotFound:
-            path = os.path.join(os.getcwd(), 'cd_manager/makepkg/docker')
+        ######
+        def generate_image():
             PackageSystem._docker_conn.images.build(
                 tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'))
+        ######
+        try:
+            one_week_ago = timezone.now() - timedelta(days=7)
+            image = PackageSystem._docker_conn.images.get('abs-cd/makepkg')
+            if datetime.utcfromtimestamp(image.history()[0]['Created']) < one_week_ago:
+                generate_image()
+        except docker.errors.ImageNotFound:
+            generate_image()
         self._repo = PackageSystem._docker_conn.volumes.get(
             "abs_cd_local-repo")
 
