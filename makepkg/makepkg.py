@@ -66,5 +66,5 @@ class PackageSystem:
         finally:
             if not output is None:
                 package.build_output = output.decode('utf-8')
-        package.build_date = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        package.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
         package.save()
