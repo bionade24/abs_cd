@@ -8,8 +8,17 @@ Tested with > 300 AUR packages I maintain.
 Installation:
 =
 
+Preperations: Docker and a webserver with reverse proxying capabilities, e. g. nginx  
+  
 ```
 git clone https://github.com/bionade24/abs_cd.git
 docker-compose up --build -d
 ```
-Per default, config and data is stored under `/var/local/abs_cd/`
+Config webserver to proxy gunicorn and server static files ([nginx example config](https://gist.github.com/bionade24/966001987ba718557cd0fcc64924938f))  
+(Optionally add private ssh key for aur push)  
+  
+Config:
+=
+
+Per default, config and data is stored under `/var/local/abs_cd/`.  
+Behaves like any Django App, so the [Django documentation](https://docs.djangoproject.com/en/3.1/) will help you with most things.
