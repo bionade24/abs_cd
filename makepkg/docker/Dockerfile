@@ -5,6 +5,7 @@ RUN systemd-machine-id-setup
 
 RUN pacman --noconfirm -Syuq --needed base-devel python boost cmake
 RUN useradd -m -d /build -s /bin/bash mkpkg
+RUN su -c "gpg --list-keys" mkpkg
 COPY sudoers /etc/sudoers
 COPY pacman.conf /etc/pacman.conf
 COPY makepkg.conf /etc/makepkg.conf
