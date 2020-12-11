@@ -38,8 +38,6 @@ class PackageSystem:
     # package should be type cd_manager.models.Package()
     def build(self, package):
         old_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
-        for path in old_pkgs:
-            os.remove(path)
         output = None
         package.build_status = 'BUILDING'
         package.build_output = None
@@ -52,6 +50,10 @@ class PackageSystem:
                                                                name=f'mkpkg_{package.name}')
             package.build_status = 'SUCCESS'
             new_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
+            #Delete old packages only if  build succeeds and they're new versions
+            for (opath, npath) in zip(old_pkgs, new_pkgs):
+                if opath != npath:
+                    os.remove(opath)
             if len(new_pkgs) == 0:
                 new_pkgs = glob.glob(
                     f"/repo/*.pkg.tar.*")
@@ -68,3 +70,4 @@ class PackageSystem:
                 package.build_output = output.decode('utf-8')
         package.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
         package.save()
+
