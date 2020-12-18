@@ -6,6 +6,7 @@ import sys
 from wcmatch import wcmatch
 from datetime import datetime, timedelta
 from django.utils import timezone
+from cd_manager.pkgbuild import SRCINFO
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
@@ -35,22 +36,27 @@ class PackageSystem:
         self._repo = PackageSystem._docker_conn.volumes.get(
             "abs_cd_local-repo")
 
-    # package should be type cd_manager.models.Package()
-    def build(self, package):
-        old_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
+    # pkgbase should be type cd_manager.models.Package()
+    def build(self, pkgbase):
+        packages = SRCINFO(os.path.join("/var/packages/", pkgbase.name, ".SRCINFO")).content['pkgname']
+        old_pkgs = list()
+        for pkg in packages:
+            old_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
         output = None
-        package.build_status = 'BUILDING'
-        package.build_output = None
-        package.save()
+        pkgbase.build_status = 'BUILDING'
+        pkgbase.build_output = None
+        pkgbase.save()
         try:
             output = PackageSystem._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
                                                                # TODO: Don't hardcode host
-                                                               mem_limit='8G', memswap_limit='8G', cpu_shares=128, volumes={f'/var/local/abs_cd/packages/{package.name}':
+                                                               mem_limit='8G', memswap_limit='8G', cpu_shares=128, volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
                                                                                                                             {'bind': '/src', 'mode': 'ro'}, 'abs_cd_local-repo': {'bind': '/repo', 'mode': 'rw'}},
-                                                               name=f'mkpkg_{package.name}')
-            package.build_status = 'SUCCESS'
-            new_pkgs = wcmatch.WcMatch('/repo', f"{package.name}-?.*-*-*.pkg.tar.*|{package.name}-?:?.*-*-*.pkg.tar.*" ).match()
-            #Delete old packages only if  build succeeds and they're new versions
+                                                               name=f'mkpkg_{pkgbase.name}')
+            pkgbase.build_status = 'SUCCESS'
+            new_pkgs = list()
+            for pkg in packages:
+                new_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
+            #Delete old pkgbases only if  build succeeds and they're new versions
             for (opath, npath) in zip(old_pkgs, new_pkgs):
                 if opath != npath:
                     os.remove(opath)
@@ -63,11 +69,11 @@ class PackageSystem:
             except subprocess.CalledProcessError as e:
                 print(e.stdout, file=sys.stderr)
         except docker.errors.ContainerError as e:
-            package.build_status = 'FAILURE'
+            pkgbase.build_status = 'FAILURE'
             output = e.stderr
         finally:
             if not output is None:
-                package.build_output = output.decode('utf-8')
-        package.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-        package.save()
+                pkgbase.build_output = output.decode('utf-8')
+        pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        pkgbase.save()
 
