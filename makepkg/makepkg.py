@@ -39,6 +39,8 @@ class PackageSystem:
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
         packages = SRCINFO(os.path.join("/var/packages/", pkgbase.name, ".SRCINFO")).content['pkgname']
+        if type(packages) == str:
+            packages = [packages, ]
         old_pkgs = list()
         for pkg in packages:
             old_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
