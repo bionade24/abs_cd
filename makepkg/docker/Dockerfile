@@ -3,7 +3,7 @@ LABEL org.abs-cd.tools=makepkg
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
 
-RUN pacman --noconfirm -Syuq --needed base-devel python boost cmake
+RUN pacman --noconfirm -Syuq --needed base-devel python
 RUN useradd -m -d /build -s /bin/bash mkpkg
 RUN su -c "gpg --list-keys" mkpkg
 COPY sudoers /etc/sudoers

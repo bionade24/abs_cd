@@ -34,8 +34,8 @@ class MakepkgContainer:
         self.user = None
         self.download_keys = None
 
-    @classmethod
-    def copy_tree(cls, src, dst, symlinks=False, ignore=None):
+    @staticmethod
+    def copy_tree(src, dst, symlinks=False, ignore=None):
         """
         Copy the directory tree from src to dst
         From https://stackoverflow.com/questions/1868714
@@ -50,8 +50,8 @@ class MakepkgContainer:
             else:
                 shutil.copy2(source_directory, destination_directory)
 
-    @classmethod
-    def change_user_or_gid(cls, uid, gid, path):
+    @staticmethod
+    def change_user_or_gid(uid, gid, path):
         """
         Change all owner UIDs and GIDs of the files in the path to the given ones
         to not change either gid or uid, set that value to -1.
@@ -73,8 +73,8 @@ class MakepkgContainer:
 
     # From https://www.tutorialspoint.com/How-to-change-the-permission-of-a-directory-using-Python
     # Written by Rajendra Dharmkar
-    @classmethod
-    def change_permissions_recursively(cls, path, mode):
+    @staticmethod
+    def change_permissions_recursively(path, mode):
         """
         Change the permissions of all files and directories in the given path to the given mode
         """
@@ -85,8 +85,8 @@ class MakepkgContainer:
             for file in [os.path.join(root, f) for f in files]:
                 os.chmod(file, mode)
 
-    @classmethod
-    def append_to_file(cls, path, content):
+    @staticmethod
+    def append_to_file(path, content):
         """
         Append the given content to the file found in the given path
         """
@@ -189,5 +189,4 @@ class MakepkgContainer:
 
 
 if __name__ == "__main__":
-    CONTAINERENTRYPOINT = MakepkgContainer()
-    CONTAINERENTRYPOINT.main()
+    MakepkgContainer().main()
