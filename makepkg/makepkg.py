@@ -53,7 +53,8 @@ class PackageSystem:
                                                                # TODO: Don't hardcode host
                                                                mem_limit='8G', memswap_limit='8G', cpu_shares=128, volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
                                                                                                                             {'bind': '/src', 'mode': 'ro'}, 'abs_cd_local-repo': {'bind': '/repo', 'mode': 'rw'}},
-                                                               name=f'mkpkg_{pkgbase.name}')
+            #Use microseconds as a fake UUID for container names to prevent name conflicts
+                                                               name=f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}')
             pkgbase.build_status = 'SUCCESS'
             new_pkgs = list()
             for pkg in packages:
