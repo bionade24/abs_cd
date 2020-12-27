@@ -23,3 +23,9 @@ Config:
 Per default, config and data is stored under `/var/local/abs_cd/`.  
 Behaves like any Django App, so the [Django documentation](https://docs.djangoproject.com/en/3.1/) will help you with most things.  
 Set `DEBUG=True` in `data/settings.ini` to allow django serving static files.  
+  
+Access repo/packages:
+=
+1. Either mount `abs_cd_local-repo` in a second container. Please be aware that then your pacman.conf repo entry has to be called `abs_cd_local-repo` everywhere or you have to rename your repo entirely. And packages aren't signed so please use https for intergrity.  
+2. Copy them: `docker cp abs_cd_abs_cd_1:/repo PATH && rm PATH/repo/abs_cd-local.*`. For a repo, I recommend you to use [repo-add_and_sign](https://aur.archlinux.org/packages/repo-add_and_sign).  
+
