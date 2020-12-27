@@ -7,6 +7,7 @@ from wcmatch import wcmatch
 from datetime import datetime, timedelta
 from django.utils import timezone
 from cd_manager.pkgbuild import SRCINFO
+from abs_cd.confighelper import Confighelper
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
@@ -17,7 +18,8 @@ class PackageSystem:
 
     def __init__(self):
         if not PackageSystem._docker_conn:
-            PackageSystem._docker_conn = docker.DockerClient(base_url='unix://var/run/docker.sock',
+            PackageSystem._docker_conn = docker.DockerClient(base_url=Confighelper().get_setting('DOCKER_SOCKET',
+            'unix:///var/run/docker.sock'),
                                                              version='auto', tls=False)
         else:
             print("Connection already established")
