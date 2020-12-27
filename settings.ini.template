@@ -1,3 +1,4 @@
 [DJANGO]
 SECRET_KEY =
 DEBUG = False
+DOCKER_SOCKET = unix://var/run/docker.sock

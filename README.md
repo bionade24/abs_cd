@@ -24,6 +24,8 @@ Per default, config and data is stored under `/var/local/abs_cd/`.
 Behaves like any Django App, so the [Django documentation](https://docs.djangoproject.com/en/3.1/) will help you with most things. (e.g. django settings.py is under abs_cd/abs_cd/settings.py and call `python manage.py createsuperuser` in the container to create admin user)  
 Set `DEBUG=True` in `data/settings.ini` to allow django serving static files.  
   
+Podman: Mount the podman socket instead, you can also manipulate the socket URL in the django container under `data/settings.ini`  
+  
 Access repo/packages:
 =
 1. Either mount `abs_cd_local-repo` in a second container. Please be aware that then your pacman.conf repo entry has to be called `abs_cd_local-repo` everywhere or you have to rename your repo entirely. And packages aren't signed so please use https for intergrity.  

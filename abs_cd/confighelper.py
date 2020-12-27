@@ -15,8 +15,17 @@ class Confighelper:
         self.settings = configparser.ConfigParser(interpolation=None)
         self.settings.read(self.setting_path)
 
-    def get_setting(self, name):
-        return self.settings['DJANGO'][name]
+    def get_setting(self, name, default=None):
+        try:
+            val = self.settings['DJANGO'][name]
+        except KeyError:
+            self.write_setting(name, '')
+            return self.get_setting(name, default)
+        if val == '' and default is not None:
+            val = default
+            self.write_setting(name, val)
+        return val
+
 
     def write_setting(self, name, value):
         with open(self.setting_path, 'w') as settingsfile:
