@@ -21,7 +21,7 @@ Config:
 =
 
 Per default, config and data is stored under `/var/local/abs_cd/`.  
-Behaves like any Django App, so the [Django documentation](https://docs.djangoproject.com/en/3.1/) will help you with most things.  
+Behaves like any Django App, so the [Django documentation](https://docs.djangoproject.com/en/3.1/) will help you with most things. (e.g. django settings.py is under abs_cd/abs_cd/settings.py and call `python manage.py createsuperuser` in the container to create admin user)  
 Set `DEBUG=True` in `data/settings.ini` to allow django serving static files.  
   
 Access repo/packages:
