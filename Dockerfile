@@ -1,4 +1,4 @@
-FROM archlinux/base:latest
+FROM docker.io/archlinux/base:latest
 LABEL org.abs-cd=webcd_manager
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
