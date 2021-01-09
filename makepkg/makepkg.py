@@ -27,7 +27,7 @@ class PackageSystem:
         def generate_image():
             print("Generating new image abs-cd/makepkg, please wait")
             PackageSystem._docker_conn.images.build(
-                tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True)
+                tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
         ######
         try:
             one_week_ago = timezone.now() - timedelta(days=7)
