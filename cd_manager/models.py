@@ -27,13 +27,15 @@ class Package(models.Model):
         return self.name
 
     def repo_status_check(self):
+        #Returns True if repo changed
         package_src = os.path.join('/var/packages', self.name)
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
+            return True
         else:
             def redownload():
                 shutil.rmtree(package_src)
-                self.repo_status_check()
+                return self.repo_status_check()
 
             try:
                 repo = Repo(path=package_src)
@@ -45,12 +47,16 @@ class Package(models.Model):
                     if url == self.repo_url:
                         matched_url = url
                 assert matched_url
+                head_before = repo.head.object.hexsha
                 remote.pull()
+                if head_before != repo.head.object.hexsha:
+                    return True
             except AssertionError:
-                redownload()
+                return redownload()
             except GitCommandError as e:
                 print(package_src + "\n" + e.stderr)
-                redownload()
+                return redownload()
+        return False
 
 
     def run_cd(self):
@@ -74,7 +80,7 @@ class Package(models.Model):
             dep = dep.split('=')[0]
         return dep
 
-    def build(self, force_rebuild=False, built_packages=[]):
+    def build(self, force_rebuild=False, built_packages=[], repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
         # recursion limit)
@@ -82,7 +88,8 @@ class Package(models.Model):
             return built_packages
         built_packages.append(self.name)
 
-        self.repo_status_check()
+        if repo_status_check:
+            self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         with Recursionlimit(2000):
             for dep in deps:

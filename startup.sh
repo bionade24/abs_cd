@@ -6,6 +6,9 @@ fi
 
 python manage.py makemigrations
 python manage.py migrate
+python manage.py crontab add
+
+crond -s
 
 if ! grep -r -i -q "debug = true" data/settings.ini; then
     #Start with gunicorn
