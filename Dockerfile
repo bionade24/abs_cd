@@ -4,6 +4,7 @@ RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key 
 RUN systemd-machine-id-setup
 
 RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython cronie
+RUN git config --global pull.ff only
 COPY requirements.txt /root
 RUN python3 -m pip install -r /root/requirements.txt
 RUN useradd -m -d /opt/abs_cd -s /bin/sh abs_cd
