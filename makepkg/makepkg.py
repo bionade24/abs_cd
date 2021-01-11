@@ -53,7 +53,7 @@ class PackageSystem:
         pkgbase.save()
         try:
             output = PackageSystem._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
-                                                               # TODO: Don't hardcode host
+                                                               # TODO: Don't hardcode host paths
                                                                mem_limit='8G', memswap_limit='8G', cpu_shares=128, volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
                                                                                                                             {'bind': '/src', 'mode': 'ro'}, 'abs_cd_local-repo': {'bind': '/repo', 'mode': 'rw'}},
             #Use microseconds as a fake UUID for container names to prevent name conflicts
@@ -62,10 +62,15 @@ class PackageSystem:
             new_pkgs = list()
             for pkg in packages:
                 new_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
+            for pkglist in (old_pkgs, new_pkgs):
+                pkglist.sort()
+                pkglist.reverse()
             #Delete old pkgbases only if  build succeeds and they're new versions
+            #TODO: Find a better solution that is still proof for multiple packages as output and works also if the packages haven't got removed during the run before.
             for (opath, npath) in zip(old_pkgs, new_pkgs):
                 if opath != npath:
                     os.remove(opath)
+                    new_pkgs.remove(opath)
             if len(new_pkgs) == 0:
                 new_pkgs = glob.glob(
                     f"/repo/*.pkg.tar.*")
