@@ -22,3 +22,16 @@ span {
 	border-radius: 10px;
 	padding: 4px;
 }
+
+.success {
+	background-color: green;
+}
+
+.failure {
+	background-color: red;
+}
+
+.not_built {
+	background-color: silver;
+	color: black;
+}

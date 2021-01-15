@@ -11,13 +11,13 @@
 {% block content %}
 </br>
 <h3>{{ package.name }}</h3>
-<p id="build_info"> Build Status: <span style=
+<p id="build_info"> Build Status: <span class=
                     {% if package.build_status == 'SUCCESS' %}
-                        "background: green"
+                        "success"
                     {% elif package.build_status == 'FAILURE' %}
-                         "background: red"
+                         "failure"
                     {% else %}
-                        "background: silver; color: black"
+		    	"not_built"
                     {% endif %}
                     >{{ package.build_status }}</span> &emsp; &emsp;
     Last Build Date: {{ package.build_date|date:'d.n.Y H:i' }}</p>
