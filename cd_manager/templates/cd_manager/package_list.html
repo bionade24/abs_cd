@@ -31,7 +31,7 @@
                     {% if package.build_status == 'SUCCESS' %}
                         "success"
                     {% elif package.build_status == 'FAILURE' %}
-                         "failed"
+                         "failure"
                     {% else %}
                         "not_built"
                     {% endif %}
