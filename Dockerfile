@@ -3,7 +3,7 @@ LABEL org.abs-cd=webcd_manager
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
 
-RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython cronie
+RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython python-wheel cronie
 COPY requirements.txt /root
 RUN python3 -m pip install -r /root/requirements.txt
 RUN useradd -m -d /opt/abs_cd -s /bin/sh abs_cd
