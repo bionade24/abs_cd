@@ -1,4 +1,4 @@
-FROM docker.io/archlinux/base:latest
+FROM docker.io/archlinux/archlinux:latest
 LABEL org.abs-cd.tools=makepkg
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
