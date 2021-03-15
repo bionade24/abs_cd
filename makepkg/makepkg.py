@@ -3,6 +3,7 @@ import os
 import glob
 import subprocess
 import sys
+import logging
 from wcmatch import wcmatch
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -11,6 +12,7 @@ from abs_cd.confighelper import Confighelper
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
+logger = logging.getLogger(__name__)
 
 
 class PackageSystem:
@@ -22,10 +24,10 @@ class PackageSystem:
             'unix:///var/run/docker.sock'),
                                                              version='auto', tls=False)
         else:
-            print("Connection already established")
+            logger.debug("Connection to Docker socket already established")
         ######
         def generate_image():
-            print("Generating new image abs-cd/makepkg, please wait")
+            logger.info("Generating new image abs-cd/makepkg, please wait")
             PackageSystem._docker_conn.images.build(
                 tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
         ######
@@ -75,10 +77,10 @@ class PackageSystem:
                 new_pkgs = glob.glob(
                     f"/repo/*.pkg.tar.*")
             try:
-                subprocess.run([REPO_ADD_BIN, '-q', 'abs_cd-local.db.tar.zst']
-                               + new_pkgs, check=True, cwd='/repo')
+                logger.warning(subprocess.run([REPO_ADD_BIN, '-q', 'abs_cd-local.db.tar.zst']
+                                              + new_pkgs, check=True, stderr=subprocess.PIPE, cwd='/repo').stderr.decode('UTF-8').strip('\n'))
             except subprocess.CalledProcessError as e:
-                print(e.stdout, file=sys.stderr)
+                logger.error(e.stdout)
         except docker.errors.ContainerError as e:
             pkgbase.build_status = 'FAILURE'
             output = e.stderr

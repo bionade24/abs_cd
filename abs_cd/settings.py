@@ -142,3 +142,40 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'style': '{',
+            'format': '[{asctime}] {message}',
+            'datefmt': '%d/%b/%Y %H:%M:%S',
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+            'stream': 'ext://sys.stdout',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+         'cd_manager': {
+             'handlers': ['console'],
+             'level': 'INFO',
+             'propagate': False,
+         },
+         'makepkg': {
+             'handlers': ['console'],
+             'level': 'INFO',
+             'propagate': False,
+         },
+    }
+}
+

@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 from cd_manager.alpm import ALPMHelper
 from cd_manager.recursion_helper import Recursionlimit
 from abs_cd import settings
@@ -9,6 +10,9 @@ from django.utils import timezone
 from datetime import timedelta
 from git import Repo
 from git.exc import GitCommandError
+
+
+logger = logging.getLogger(__name__)
 
 
 class Package(models.Model):
@@ -54,7 +58,7 @@ class Package(models.Model):
             except AssertionError:
                 return redownload()
             except GitCommandError as e:
-                print(package_src + "\n" + e.stderr)
+                logger.warning(package_src + "\n" + e.stderr)
                 return redownload()
         return False
 
@@ -102,7 +106,7 @@ class Package(models.Model):
                        force_rebuild:
                         built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages)
                     else:
-                        print(
+                        logger.info(
                             f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
                 except Package.DoesNotExist:
                     pass
@@ -125,7 +129,7 @@ class Package(models.Model):
             info = pkg_repo.push()[0]
             self.aur_push_output = str(info.summary)
         except GitCommandError as e:
-            print(self.name + " has AUR push problems: ")
+            logger.warning(self.name + " has AUR push problems: ")
             self.aur_push_output = str(e)
         finally:
             self.save()
