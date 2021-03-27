@@ -11,7 +11,9 @@ class Confighelper:
             if os.path.isfile(template_path):
                 shutil.copyfile(template_path, self.setting_path)
             else:
-                raise FileNotFoundError("Neither data/settings.ini or settings.ini.template available")
+                self.setting_path = '/opt/abs_cd/data/settings.ini'
+                if not os.path.isfile(self.setting_path):
+                    raise FileNotFoundError("Neither data/settings.ini or settings.ini.template available")
         self.settings = configparser.ConfigParser(interpolation=None)
         self.settings.read(self.setting_path)
 
