@@ -8,6 +8,9 @@ python manage.py makemigrations
 python manage.py migrate
 python manage.py crontab add
 
+echo "Starting syslog:"
+syslog-ng --no-caps
+echo "Starting crond:"
 crond -s
 
 if ! grep -r -i -q "debug = true" data/settings.ini; then
