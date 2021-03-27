@@ -155,7 +155,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
             'stream': 'ext://sys.stdout',
@@ -163,17 +163,17 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'DEBUG' if DEBUG else 'INFO',
     },
     'loggers': {
          'cd_manager': {
              'handlers': ['console'],
-             'level': 'INFO',
+             'level': 'DEBUG' if DEBUG else 'INFO',
              'propagate': False,
          },
          'makepkg': {
              'handlers': ['console'],
-             'level': 'INFO',
+             'level': 'DEBUG' if DEBUG else 'INFO',
              'propagate': False,
          },
     }
