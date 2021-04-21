@@ -48,7 +48,7 @@ class PackageSystem:
             packages = [packages, ]
         old_pkgs = list()
         for pkg in packages:
-            old_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
+            old_pkgs.extend(glob.glob(f"/repo/{pkg}-*-*[0-9]-*.pkg.tar.*"))
         output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None
@@ -63,21 +63,14 @@ class PackageSystem:
             pkgbase.build_status = 'SUCCESS'
             new_pkgs = list()
             for pkg in packages:
-                new_pkgs.extend(wcmatch.WcMatch('/repo', f"{pkg}-?.*-*-*.pkg.tar.*|{pkg}-?:?.*-*-*.pkg.tar.*" ).match())
-            for pkglist in (old_pkgs, new_pkgs):
-                pkglist.sort()
-                pkglist.reverse()
-            #Delete old pkgbases only if  build succeeds and they're new versions
-            #TODO: Find a better solution that is still proof for multiple packages as output and works also if the packages haven't got removed during the run before.
-            for (opath, npath) in zip(old_pkgs, new_pkgs):
-                if opath != npath:
-                    os.remove(opath)
-                    new_pkgs.remove(opath)
+                new_pkgs.extend(glob.glob(f"/repo/{pkg}-*-*[0-9]-*.pkg.tar.*"))
+            # Delete old pkgbases only if  build succeeds
+            # and there are new versions
+            new_pkgs = list(set(new_pkgs) - set(old_pkgs))
             if len(new_pkgs) == 0:
-                new_pkgs = glob.glob(
-                    f"/repo/*.pkg.tar.*")
+                new_pkgs = glob.glob(f"/repo/*.pkg.tar.*")
             try:
-                logger.warning(subprocess.run([REPO_ADD_BIN, '-q', 'abs_cd-local.db.tar.zst']
+                logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
                                               + new_pkgs, check=True, stderr=subprocess.PIPE, cwd='/repo').stderr.decode('UTF-8').strip('\n'))
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
