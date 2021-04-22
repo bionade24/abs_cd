@@ -46,9 +46,6 @@ class PackageSystem:
         packages = SRCINFO(os.path.join("/var/packages/", pkgbase.name, ".SRCINFO")).content['pkgname']
         if type(packages) == str:
             packages = [packages, ]
-        old_pkgs = list()
-        for pkg in packages:
-            old_pkgs.extend(glob.glob(f"/repo/{pkg}-*-*[0-9]-*.pkg.tar.*"))
         output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None
@@ -61,17 +58,14 @@ class PackageSystem:
             #Use microseconds as a fake UUID for container names to prevent name conflicts
                                                                name=f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}')
             pkgbase.build_status = 'SUCCESS'
-            new_pkgs = list()
+            pkg_paths = list()
             for pkg in packages:
-                new_pkgs.extend(glob.glob(f"/repo/{pkg}-*-*[0-9]-*.pkg.tar.*"))
-            # Delete old pkgbases only if  build succeeds
-            # and there are new versions
-            new_pkgs = list(set(new_pkgs) - set(old_pkgs))
-            if len(new_pkgs) == 0:
-                new_pkgs = glob.glob(f"/repo/*.pkg.tar.*")
+                pkg_paths.extend(glob.glob(f"/repo/{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*"))
+            if len(pkg_paths) == 0:
+                pkg_paths = glob.glob(f"/repo/*.pkg.tar.*")
             try:
                 logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
-                                              + new_pkgs, check=True, stderr=subprocess.PIPE, cwd='/repo').stderr.decode('UTF-8').strip('\n'))
+                                              + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo').stderr.decode('UTF-8').strip('\n'))
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
