@@ -4,6 +4,7 @@ RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key 
 RUN systemd-machine-id-setup
 
 RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython python-wheel cronie syslog-ng
+RUN rm /etc/cron.d/0hourly #Disable anacron
 COPY requirements.txt /root
 RUN python3 -m pip install -r /root/requirements.txt
 #Cronie can only log to syslog, so add a Docker fake tty as a log destination
