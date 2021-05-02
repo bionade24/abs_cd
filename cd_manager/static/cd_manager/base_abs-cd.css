@@ -5,6 +5,7 @@ html *
 
 .content {
     margin: 0 auto;
+    margin-bottom: 10px;
     text-align: left;
     width: 95%;
 }
@@ -12,4 +13,5 @@ html *
 hr {
     border: 0;
     border-bottom: 1px dashed #BBCCDD;
+    margin-bottom: 10px;
 }
