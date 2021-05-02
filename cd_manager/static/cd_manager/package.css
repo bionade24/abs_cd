@@ -1,7 +1,7 @@
 .console_output {
     align-self: center;
     text-align: left;
-    background: gray;
+    background: grey;
     padding: 0.5em;
     margin-left: 4em;
     margin-right: 16em
@@ -12,14 +12,13 @@
 }
 
 .success {
-	background-color: green;
+	color: green;
 }
 
 .failure {
-	background-color: red;
+	color: red;
 }
 
 .not_built {
-	background-color: silver;
-	color: black;
+	color: grey;
 }
