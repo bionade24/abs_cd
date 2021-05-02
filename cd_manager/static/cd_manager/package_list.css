@@ -45,3 +45,7 @@ span {
 .not_built {
 	color: grey;
 }
+
+.console_output {
+    padding: 1em;
+}

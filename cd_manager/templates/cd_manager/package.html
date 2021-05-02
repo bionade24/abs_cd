@@ -5,42 +5,76 @@
 
 {% block style %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'cd_manager/package.css' %}">
+<link rel="stylesheet" href="{% static 'cd_manager/package_list.css' %}">
 {% endblock style %}
 
 {% block content %}
 </br>
-<h3>{{ package.name }}</h3>
-<p id="build_info"> Build Status: <span class=
-                    {% if package.build_status == 'SUCCESS' %}
-                        "success"
-                    {% elif package.build_status == 'FAILURE' %}
-                         "failure"
-                    {% else %}
-		    	"not_built"
-                    {% endif %}
-                    >{{ package.build_status }}</span> &emsp; &emsp;
-    Last Build Date: {{ package.build_date|date:'d.n.Y H:i' }}</p>
-<h5 id="bo_header">Build Output</h5>
-<div id="build_output" class="console_output">
-{% if package.build_output %}
-{{ package.build_output|linebreaksbr}}
-{% else %}
-There is no build output available.
-{% endif %}
-</div>
+<table>
+  <tbody>
+    <tr>
+      <td>Package Name</td>
+      <td>{{ package.name }}</td>
+    </tr>
+    <tr>
+      <td>Status</td>
+      <td><span class={% if package.build_status == 'SUCCESS' %} "success" {% elif package.build_status == 'FAILURE' %} "failure" {% else %} "not_built" {% endif %}>{{ package.build_status }}</span></td>
+    </tr>
+    <tr>
+      <td>Last Build Date</td>
+      <td>{{ package.build_date|date:'d.n.Y H:i' }}</td>
+    </tr>
+    <tr>
+      <td>Repo URL</td>
+      <td><a href="{{ package.repo_url }}">{{ package.repo_url }}</a></td>
+    </tr>
+  </tbody>
+</table>
+<hr>
+<table>
+  <thead>
+    <tr>
+      <th>Build Output</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <div id="build_output" class="console_output">
+          {% if package.build_output %}
+          {{ package.build_output|linebreaksbr}}
+          {% else %}
+          There is no build output available.
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-&emsp; &emsp;
+<hr>
 
 {% if package.aur_push %}
-<h5 id="bo_header">Git push to AUR Output</h5>
-<div id="aur_push_output" class="console_output">
-{% if package.aur_push_output %}
-{{ package.aur_push_output|linebreaksbr}}
-{% else %}
-There is no aurpush output available.
-{% endif %}
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>Git push to AUR Output</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <div id="aur_push_output" class="console_output">
+          {% if package.aur_push_output %}
+          {{ package.aur_push_output|linebreaksbr}}
+          {% else %}
+          There is no aurpush output available.
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
 {% endif %}
 
 {% endblock content %}
