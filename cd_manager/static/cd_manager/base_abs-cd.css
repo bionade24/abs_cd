@@ -2,3 +2,14 @@ html *
 {
     font-family: sans-serif !important;
 }
+
+.content {
+    margin: 0 auto;
+    text-align: left;
+    width: 95%;
+}
+
+hr {
+    border: 0;
+    border-bottom: 1px dashed #BBCCDD;
+}

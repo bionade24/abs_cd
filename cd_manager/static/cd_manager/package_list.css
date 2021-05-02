@@ -1,10 +1,15 @@
 table {
     width: 100%;
+    background-color: #ECF2F5;
+    line-height: 1.3em;
+    border: 1px solid #BBCCDD;
 }
 
 th {
     text-align: left;
     padding: 0px;
+    background-color: #D9E6EC;
+    border-bottom: 1px solid #BBCCDD;
 }
 
 td {
@@ -12,26 +17,22 @@ td {
     padding: 2px;
 }
 
-span {
-    padding: 2px
+tr:hover {
+	background-color: #E4EDF1;
 }
 
-.pkglist_header {
-	background-color: #333;
-	color: #DDD;
-	border-radius: 10px;
-	padding: 4px;
+span {
+    padding: 2px;
 }
 
 .success {
-	background-color: green;
+	color: green;
 }
 
 .failure {
-	background-color: red;
+	color: red;
 }
 
 .not_built {
-	background-color: silver;
-	color: black;
+	color: grey;
 }
