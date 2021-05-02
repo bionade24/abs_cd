@@ -5,16 +5,25 @@ table {
     border: 1px solid #BBCCDD;
 }
 
+a, a:visited {
+    color: #0077BB;
+    text-decoration: none;
+}
+
+a:hover, a:focus, a:visited:hover, a:visited:focus {
+    text-decoration: underline;
+}
+
 th {
     text-align: left;
-    padding: 0px;
+    padding: 2px;
     background-color: #D9E6EC;
     border-bottom: 1px solid #BBCCDD;
 }
 
 td {
     text-align: left;
-    padding: 2px;
+    padding: 4px;
 }
 
 tr:hover {
