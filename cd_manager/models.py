@@ -3,7 +3,6 @@ import shutil
 import logging
 from cd_manager.alpm import ALPMHelper
 from cd_manager.recursion_helper import Recursionlimit
-from abs_cd import settings
 from django.db import models
 from makepkg.makepkg import PackageSystem
 from django.utils import timezone
@@ -31,7 +30,7 @@ class Package(models.Model):
         return self.name
 
     def repo_status_check(self):
-        #Returns True if repo changed
+        # Returns True if repo changed
         package_src = os.path.join('/var/packages', self.name)
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
@@ -61,7 +60,6 @@ class Package(models.Model):
                 logger.warning(package_src + "\n" + e.stderr)
                 return redownload()
         return False
-
 
     def run_cd(self):
         self.repo_status_check()
@@ -133,4 +131,3 @@ class Package(models.Model):
             self.aur_push_output = str(e)
         finally:
             self.save()
-

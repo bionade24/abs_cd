@@ -16,18 +16,18 @@ class ALPMHelper:
             ALPMHelper._syncdbs = ALPMHelper._alpm_handle.get_syncdbs()
 
     def get_pkg_from_syncdbs(self, pkgname):
-        if type(pkgname) != str:
+        if not isinstance(pkgname, str):
             raise TypeError("Argument pkgname is not a String")
         for db in self._syncdbs:
             pkg = db.get_pkg(pkgname)
-            if type(pkg) is pyalpm.Package:
+            if isinstance(pkg, pyalpm.Package):
                 return pkg
             else:
                 pass
         raise PackageNotFoundError(pkgname)
 
     def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):
-        if type(pkgname) != str:
+        if not isinstance(pkgname, str):
             raise TypeError("Argument pkgname is not a String")
         srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
         deps = []

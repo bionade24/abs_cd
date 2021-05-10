@@ -11,7 +11,6 @@ def check_for_new_commits():
         for pkg in Package.objects.all():
             if pkg.repo_status_check():
                 pkg.build()
-                #TODO: Speed up process by already excluding dependencies after pkg was built
+                # TODO: Speed up process by already excluding dependencies after pkg was built
     except BaseException:
         logger.exception("Cronjob checking for new commits in all repos failed:")
-

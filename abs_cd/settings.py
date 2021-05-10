@@ -16,12 +16,14 @@ from django.core.management import utils
 
 helper = Confighelper()
 
+
 def get_secret_key():
     key = helper.get_setting('SECRET_KEY')
     if key == '':
         key = utils.get_random_secret_key()
         helper.write_setting('SECRET_KEY', key)
     return key
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -113,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CRONJOBS = [
-        ('30 0 * * *', 'cd_manager.cron.check_for_new_commits'),
+    ('30 0 * * *', 'cd_manager.cron.check_for_new_commits'),
 ]
 
 
@@ -166,16 +168,15 @@ LOGGING = {
         'level': 'DEBUG' if DEBUG else 'INFO',
     },
     'loggers': {
-         'cd_manager': {
-             'handlers': ['console'],
-             'level': 'DEBUG' if DEBUG else 'INFO',
-             'propagate': False,
-         },
-         'makepkg': {
-             'handlers': ['console'],
-             'level': 'DEBUG' if DEBUG else 'INFO',
-             'propagate': False,
-         },
+        'cd_manager': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'makepkg': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
     }
 }
-

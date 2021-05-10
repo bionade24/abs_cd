@@ -2,6 +2,7 @@ import configparser
 import os
 import shutil
 
+
 class Confighelper:
 
     def __init__(self):
@@ -27,7 +28,6 @@ class Confighelper:
             val = default
             self.write_setting(name, val)
         return val
-
 
     def write_setting(self, name, value):
         with open(self.setting_path, 'w') as settingsfile:

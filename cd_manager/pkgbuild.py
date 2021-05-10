@@ -28,7 +28,7 @@ class SRCINFO:
             if not return_dict.get(key):
                 return_dict[key] = value  # set new value
             else:
-                if not type(return_dict[key]) is list:
+                if not isinstance(return_dict[key], list):
                     # convert value to array and append
                     return_dict[key] = [return_dict[key], value]
                 else:
@@ -57,7 +57,7 @@ def parse_source_field(source_text, source_parts):
     :param source_text: The text (see https://wiki.archlinux.org/index.php/VCS_package_guidelines#VCS_sources)
     :param source_parts: Which part to return; use the SourceParts enum
     """
-    if not type(source_parts) is SourceParts:
+    if not isinstance(source_parts, SourceParts):
         return None
     if source_parts is SourceParts.folder:
         if "::" in source_text:
@@ -66,12 +66,12 @@ def parse_source_field(source_text, source_parts):
         return None
     elif source_parts is SourceParts.vcs:
         if "+" in source_text:
-            return re.search('(?:.*::)?(.+?)\+', source_text).group(1)
+            return re.search('(?:.*::)?(.+?)\\+', source_text).group(1)
     elif source_parts is SourceParts.url:
         if "#" in source_text:
             # TODO: Make simpler without if
-            return re.search('(?:.*\+)?(.+?)#', source_text).group(1)
-        return re.search('(?:.*\+)?(.*)', source_text).group(1)
+            return re.search('(?:.*\\+)?(.+?)#', source_text).group(1)
+        return re.search('(?:.*\\+)?(.*)', source_text).group(1)
     elif source_parts is SourceParts.fragment:
         if "#" in source_text:
             return re.search('#(.*)', source_text).group(1)
