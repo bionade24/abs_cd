@@ -1,5 +1,5 @@
 Django==3.1.8
-docker==4.3.1
-gunicorn==20.1.0
 django-sortable-listview==0.43
 django-crontab==0.7.1
+docker>=4.3.1
+gunicorn>=20.1.0
