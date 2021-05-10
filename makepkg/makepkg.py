@@ -4,7 +4,6 @@ import glob
 import subprocess
 import sys
 import logging
-from wcmatch import wcmatch
 from datetime import datetime, timedelta
 from django.utils import timezone
 from cd_manager.pkgbuild import SRCINFO
