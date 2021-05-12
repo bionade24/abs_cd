@@ -58,7 +58,10 @@ class PackageSystem:
                                                  volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
                                                           {'bind': '/src', 'mode': 'ro'},
                                                           'abs_cd_local-repo':
-                                                          {'bind': '/repo', 'mode': 'rw'}},
+                                                          {'bind': '/repo', 'mode': 'rw'},
+                                                          '/var/cache/pacman/pkg':
+                                                          {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
+                                                          },
                                                  # Use microseconds as a fake UUID for container names to
                                                  # prevent name conflicts
                                                  name=f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}')
