@@ -15,6 +15,10 @@ class ALPMHelper:
         if not ALPMHelper._syncdbs:
             ALPMHelper._syncdbs = ALPMHelper._alpm_handle.get_syncdbs()
 
+    def update_syncdbs(self):
+        for db in self._syncdbs:
+            db.update(force=False)
+
     def get_pkg_from_syncdbs(self, pkgname):
         if not isinstance(pkgname, str):
             raise TypeError("Argument pkgname is not a String")

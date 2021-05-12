@@ -115,6 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CRONJOBS = [
+    ('0 0 * * *', 'cd_manager.cron.update_pacmandbs'),
     ('30 0 * * *', 'cd_manager.cron.check_for_new_commits'),
 ]
 
