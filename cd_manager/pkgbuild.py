@@ -40,15 +40,15 @@ class SRCINFO:
 
     def getrundeps(self):
         rundeps = self.getcontent().get('depends')
-        return rundeps if not rundeps is None else []
+        return rundeps if rundeps is not None else []
 
     def getmakedeps(self):
         makedeps = self.getcontent().get('makedepends')
-        return makedeps if not makedeps is None else []
+        return makedeps if makedeps is not None else []
 
     def getcheckdeps(self):
         checkdeps = self.getcontent().get('checkdepends')
-        return checkdeps if not checkdeps is None else []
+        return checkdeps if checkdeps is not None else []
 
 
 def parse_source_field(source_text, source_parts):
