@@ -19,9 +19,7 @@ class ALPMHelper:
         for db in self._syncdbs:
             db.update(force=False)
 
-    def get_pkg_from_syncdbs(self, pkgname):
-        if not isinstance(pkgname, str):
-            raise TypeError("Argument pkgname is not a String")
+    def get_pkg_from_syncdbs(self, pkgname: str):
         for db in self._syncdbs:
             pkg = db.get_pkg(pkgname)
             if isinstance(pkg, pyalpm.Package):
