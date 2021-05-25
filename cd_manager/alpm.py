@@ -42,10 +42,10 @@ class ALPMHelper:
     @staticmethod
     def get_srcinfo(pkgname: str):
         srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
-        if os.path.isfile(srcinfo_path):
-            return SRCINFO(srcinfo_path)
-        else:
-            return None
+        if not os.path.isfile(srcinfo_path):
+            from cd_manager.models import Package
+            Package.objects.get(name=pkgname).repo_status_check()
+        return SRCINFO(srcinfo_path)
 
     def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):
         if not isinstance(pkgname, str):
@@ -89,12 +89,7 @@ class ALPMHelper:
            pot_dep is expected to be in the CI database."""
         if not wanted_dep.version or not wanted_dep.cmp_func:
             return True
-        pot_dep_info = ALPMHelper.get_srcinfo(pot_dep)
-        if not pot_dep_info:  # True when PKGBUILD of package not locally available
-            from cd_manager.models import Package
-            Package.objects.get(name=pot_dep).repo_status_check()
-            pot_dep_info = ALPMHelper.get_srcinfo(pot_dep)
-        pot_dep_provides = pot_dep_info.getcontent()['provides']
+        pot_dep_provides = ALPMHelper.get_srcinfo(pot_dep).getcontent()['provides']
         if wanted_dep.depends_entry in pot_dep_provides:
             return True
         for entry in pot_dep_provides:
