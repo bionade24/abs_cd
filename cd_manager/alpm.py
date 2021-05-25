@@ -1,7 +1,18 @@
 import pyalpm
 import os
-from cd_manager.pkgbuild import SRCINFO
+from dataclasses import dataclass
+from typing import Callable
+from typing import Optional
 from pycman.config import PacmanConfig
+from cd_manager.pkgbuild import SRCINFO
+
+
+@dataclass
+class Dependency:
+    name: str
+    depends_entry: Optional[str]
+    version: Optional[str]
+    cmp_func: Optional[Callable[[int], bool]]
 
 
 class ALPMHelper:
@@ -28,13 +39,20 @@ class ALPMHelper:
                 pass
         raise PackageNotFoundError(pkgname)
 
+    @staticmethod
+    def get_srcinfo(pkgname: str):
+        srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
+        if os.path.isfile(srcinfo_path):
+            return SRCINFO(srcinfo_path)
+        else:
+            return None
+
     def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):
         if not isinstance(pkgname, str):
             raise TypeError("Argument pkgname is not a String")
-        srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
         deps = []
-        if os.path.isfile(srcinfo_path):
-            srcinfo = SRCINFO(srcinfo_path)
+        srcinfo = ALPMHelper.get_srcinfo(pkgname)
+        if srcinfo:
             if rundeps:
                 deps += srcinfo.getrundeps()
             if makedeps:
@@ -50,6 +68,40 @@ class ALPMHelper:
             if checkdeps:
                 deps += pkg.checkdepends
         return list(set(deps))
+
+    @staticmethod
+    def parse_dep_req(dep: str):
+        # Yes it's better that way so it has a clear api at satifies_ver_req()
+        seperators = (('>=', lambda x: True if x <= 0 else False),
+                      ('<=', lambda x: True if x >= 0 else False),
+                      ('=', lambda x: True if x == 0 else False),
+                      ('>', lambda x: True if x < 0 else False),
+                      ('<', lambda x: True if x > 0 else False))
+        for sep in seperators:
+            if sep[0] in dep:
+                parts = dep.split(sep[0])
+                return Dependency(parts[0], dep, parts[1], parts[1])
+        return Dependency(dep, None, None, None)
+
+    @staticmethod
+    def satifies_ver_req(wanted_dep: Dependency, pot_dep: str):
+        """Checks if pot_dep provides the wanted dep.
+           pot_dep is expected to be in the CI database."""
+        if not wanted_dep.version or not wanted_dep.cmp_func:
+            return True
+        pot_dep_info = ALPMHelper.get_srcinfo(pot_dep)
+        if not pot_dep_info:  # True when PKGBUILD of package not locally available
+            from cd_manager.models import Package
+            Package.objects.get(name=pot_dep).repo_status_check()
+            pot_dep_info = ALPMHelper.get_srcinfo(pot_dep)
+        pot_dep_provides = pot_dep_info.getcontent()['provides']
+        if wanted_dep.depends_entry in pot_dep_provides:
+            return True
+        for entry in pot_dep_provides:
+            pot_dep = ALPMHelper.parse_dep_req(entry)
+            if wanted_dep.cmp_func(pyalpm.vercmp(wanted_dep.version, pot_dep.version)):
+                return True
+        return False
 
 
 class PackageNotFoundError(RuntimeError):

@@ -71,17 +71,6 @@ class Package(models.Model):
                 self.aur_push_output = None
                 self.save()
 
-    @staticmethod
-    def sanitize_dep(dep):
-        # TODO: Proper version checking
-        if '>=' in dep:
-            dep = dep.split('>=')[0]
-        elif '<=' in dep:
-            dep = dep.split('<=')[0]
-        elif '=' in dep:
-            dep = dep.split('=')[0]
-        return dep
-
     def build(self, force_rebuild=False, built_packages=[], repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
@@ -94,20 +83,25 @@ class Package(models.Model):
             self.repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         with Recursionlimit(2000):
-            for dep in deps:
-                dep = self.sanitize_dep(dep)
-                try:
-                    dep_pkgobj = Package.objects.get(name=dep)
-                    one_week_ago = timezone.now() - timedelta(days=7)
-                    if dep_pkgobj.build_status != 'SUCCESS' or \
-                       dep_pkgobj.build_date < one_week_ago or \
-                       force_rebuild:
-                        built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages)
-                    else:
-                        logger.info(
-                            f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
-                except Package.DoesNotExist:
-                    pass
+            for wanted_dep in deps:
+                wanted_dep = ALPMHelper.parse_dep_req(wanted_dep)
+                query = Package.objects.filter(name__icontains=wanted_dep.name)
+                if len(query) == 0:
+                    continue
+                for potdep in query:
+                    if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
+                        dep_pkgobj = potdep
+                        break
+                if not dep_pkgobj:
+                    continue
+                one_week_ago = timezone.now() - timedelta(days=7)
+                if dep_pkgobj.build_status != 'SUCCESS' or \
+                   dep_pkgobj.build_date < one_week_ago or \
+                   force_rebuild:
+                    built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages)
+                else:
+                    logger.info(
+                        f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
         self.run_cd()
         return built_packages
 
