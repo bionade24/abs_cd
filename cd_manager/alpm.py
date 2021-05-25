@@ -72,7 +72,7 @@ class ALPMHelper:
 
     @staticmethod
     def parse_dep_req(dep: str):
-        # Yes it's better that way so it has a clear api at satifies_ver_req()
+        # Yes the operators are better that way so it has a clear api at satifies_ver_req()
         seperators = (('>=', lambda x: True if x <= 0 else False),
                       ('<=', lambda x: True if x >= 0 else False),
                       ('=', lambda x: True if x == 0 else False),
