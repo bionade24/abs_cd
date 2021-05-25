@@ -45,7 +45,7 @@ class ALPMHelper:
         srcinfo_path = os.path.join(settings.PKGBUILDREPOS_PATH, pkgname, '.SRCINFO')
         if not os.path.isfile(srcinfo_path):
             from cd_manager.models import Package
-            Package.objects.get(name=pkgname).repo_status_check()
+            Package.objects.get(name=pkgname).pkgbuild_repo_status_check()
         return SRCINFO(srcinfo_path)
 
     def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):

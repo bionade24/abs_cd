@@ -30,7 +30,7 @@ class Package(models.Model):
     def __str__(self):
         return self.name
 
-    def repo_status_check(self):
+    def pkgbuild_repo_status_check(self):
         # Returns True if repo changed
         package_src = os.path.join(settings.PKGBUILDREPOS_PATH, self.name)
         if not os.path.exists(package_src):
@@ -39,7 +39,7 @@ class Package(models.Model):
         else:
             def redownload():
                 shutil.rmtree(package_src)
-                return self.repo_status_check()
+                return self.pkgbuild_repo_status_check()
 
             try:
                 repo = Repo(path=package_src)
@@ -63,7 +63,7 @@ class Package(models.Model):
         return False
 
     def run_cd(self):
-        self.repo_status_check()
+        self.pkgbuild_repo_status_check()
         PackageSystem().build(self)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
@@ -81,7 +81,7 @@ class Package(models.Model):
         built_packages.append(self.name)
 
         if repo_status_check:
-            self.repo_status_check()
+            self.pkgbuild_repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
         with Recursionlimit(2000):
             for wanted_dep in deps:

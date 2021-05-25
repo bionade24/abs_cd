@@ -10,7 +10,7 @@ def check_for_new_commits():
     logger.info("Start checking for new commits in all repos.")
     try:
         for pkg in Package.objects.all():
-            if pkg.repo_status_check():
+            if pkg.pkgbuild_repo_status_check():
                 pkg.build()
                 # TODO: Speed up process by already excluding dependencies after pkg was built
     except BaseException:
