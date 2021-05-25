@@ -5,6 +5,7 @@ from typing import Callable
 from typing import Optional
 from pycman.config import PacmanConfig
 from cd_manager.pkgbuild import SRCINFO
+from django.conf import settings
 
 
 @dataclass
@@ -41,7 +42,7 @@ class ALPMHelper:
 
     @staticmethod
     def get_srcinfo(pkgname: str):
-        srcinfo_path = os.path.join('/var/packages', pkgname, '.SRCINFO')
+        srcinfo_path = os.path.join(settings.PKGBUILDREPOS_PATH, pkgname, '.SRCINFO')
         if not os.path.isfile(srcinfo_path):
             from cd_manager.models import Package
             Package.objects.get(name=pkgname).repo_status_check()

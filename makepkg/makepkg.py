@@ -5,6 +5,7 @@ import subprocess
 import logging
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.conf import settings
 from cd_manager.pkgbuild import SRCINFO
 from abs_cd.confighelper import Confighelper
 
@@ -43,7 +44,7 @@ class PackageSystem:
 
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
-        packages = SRCINFO(os.path.join("/var/packages/", pkgbase.name, ".SRCINFO")).content['pkgname']
+        packages = SRCINFO(os.path.join(settings.PKGBUILDREPOS_PATH, pkgbase.name, ".SRCINFO")).content['pkgname']
         if isinstance(packages, str):
             packages = [packages, ]
         output = None
@@ -58,7 +59,7 @@ class PackageSystem:
                                                  volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
                                                           {'bind': '/src', 'mode': 'ro'},
                                                           'abs_cd_local-repo':
-                                                          {'bind': '/repo', 'mode': 'rw'},
+                                                          {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
                                                           '/var/cache/pacman/pkg':
                                                           {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
                                                           },
@@ -68,9 +69,9 @@ class PackageSystem:
             pkgbase.build_status = 'SUCCESS'
             pkg_paths = list()
             for pkg in packages:
-                pkg_paths.extend(glob.glob(f"/repo/{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*"))
+                pkg_paths.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
             if len(pkg_paths) == 0:
-                pkg_paths = glob.glob("/repo/*.pkg.tar.*")
+                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
             try:
                 logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
                                               + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo').

@@ -1,11 +1,12 @@
 import os
 import shutil
 import logging
+from django.db import models
+from django.utils import timezone
+from django.conf import settings
 from cd_manager.alpm import ALPMHelper
 from cd_manager.recursion_helper import Recursionlimit
-from django.db import models
 from makepkg.makepkg import PackageSystem
-from django.utils import timezone
 from datetime import timedelta
 from git import Repo
 from git.exc import GitCommandError
@@ -31,7 +32,7 @@ class Package(models.Model):
 
     def repo_status_check(self):
         # Returns True if repo changed
-        package_src = os.path.join('/var/packages', self.name)
+        package_src = os.path.join(settings.PKGBUILDREPOS_PATH, self.name)
         if not os.path.exists(package_src):
             Repo.clone_from(self.repo_url, package_src)
             return True
@@ -110,7 +111,7 @@ class Package(models.Model):
 
     def push_to_aur(self):
         path = os.path.join(
-            '/var/packages', self.name)
+            settings.PKGBUILDREPOS_PATH, self.name)
         try:
             pkg_repo = Repo(path=path).remote(name='aur')
         except ValueError:
