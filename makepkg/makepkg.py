@@ -52,8 +52,11 @@ class PackageSystem:
         pkgbase.build_output = None
         pkgbase.save()
         try:
+            # Use microseconds as a fake UUID for container names to
+            # prevent name conflicts
+            container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
             output = PackageSystem \
-                    ._docker_conn.containers.run(image='abs-cd/makepkg', remove=True,
+                    ._docker_conn.containers.run(image='abs-cd/makepkg', remove=False,
                                                  mem_limit='8G', memswap_limit='8G', cpu_shares=128,
                                                  # TODO: Don't hardcode host paths
                                                  volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
@@ -63,9 +66,7 @@ class PackageSystem:
                                                           '/var/cache/pacman/pkg':
                                                           {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
                                                           },
-                                                 # Use microseconds as a fake UUID for container names to
-                                                 # prevent name conflicts
-                                                 name=f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}')
+                                                 name=container_name)
             pkgbase.build_status = 'SUCCESS'
             pkg_paths = list()
             for pkg in packages:
@@ -80,8 +81,9 @@ class PackageSystem:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
             pkgbase.build_status = 'FAILURE'
-            output = e.stderr
+            output = e.container.logs()
         finally:
+            self._docker_conn.containers.get(container_name).remove()
             if output:
                 pkgbase.build_output = output.decode('utf-8')
         pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
