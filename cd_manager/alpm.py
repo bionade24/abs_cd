@@ -52,9 +52,7 @@ class ALPMHelper:
                 raise PackageNotFoundError(pkgname)
         return SRCINFO(srcinfo_path)
 
-    def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):
-        if not isinstance(pkgname, str):
-            raise TypeError("Argument pkgname is not a String")
+    def get_deps(self, pkgname: str, rundeps=True, makedeps=False, checkdeps=False):
         deps = []
         try:
             srcinfo = ALPMHelper.get_srcinfo(pkgname)
