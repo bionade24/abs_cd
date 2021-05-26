@@ -6,6 +6,7 @@ from typing import Optional
 from pycman.config import PacmanConfig
 from cd_manager.pkgbuild import SRCINFO
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 
 @dataclass
@@ -44,23 +45,26 @@ class ALPMHelper:
     def get_srcinfo(pkgname: str):
         srcinfo_path = os.path.join(settings.PKGBUILDREPOS_PATH, pkgname, '.SRCINFO')
         if not os.path.isfile(srcinfo_path):
-            from cd_manager.models import Package
-            Package.objects.get(name=pkgname).pkgbuild_repo_status_check()
+            try:
+                from cd_manager.models import Package
+                Package.objects.get(name=pkgname).pkgbuild_repo_status_check()
+            except ObjectDoesNotExist:
+                raise PackageNotFoundError(pkgname)
         return SRCINFO(srcinfo_path)
 
     def get_deps(self, pkgname, rundeps=True, makedeps=False, checkdeps=False):
         if not isinstance(pkgname, str):
             raise TypeError("Argument pkgname is not a String")
         deps = []
-        srcinfo = ALPMHelper.get_srcinfo(pkgname)
-        if srcinfo:
+        try:
+            srcinfo = ALPMHelper.get_srcinfo(pkgname)
             if rundeps:
                 deps += srcinfo.getrundeps()
             if makedeps:
                 deps += srcinfo.getmakedeps()
             if checkdeps:
                 deps += srcinfo.getcheckdeps()
-        else:
+        except PackageNotFoundError:
             pkg = self.get_pkg_from_syncdbs(pkgname=pkgname)
             if rundeps:
                 deps += pkg.depends
