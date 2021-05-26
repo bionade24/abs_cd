@@ -60,5 +60,7 @@ class TestALPMHelper(TestCase):
                     break
         assert('sdformat-6' in pkgs)
         assert('ignition-transport-4' in pkgs)
+        assert('sdformat' not in pkgs)
+        assert('ignition-transport' not in pkgs)
         if os.path.isdir("./tests"):
             shutil.rmtree("./tests")
