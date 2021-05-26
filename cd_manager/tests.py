@@ -44,6 +44,11 @@ class TestALPMHelper(TestCase):
     def test_ros_melodic_desktop_full(self):
         get_deps("ros-melodic-desktop-full")
 
+    def test_for_falsely_found_deps(self):
+        deps = (ALPMHelper().get_deps(pkgname="ros-build-tools-py3", rundeps=True, makedeps=True))
+        assert(len(deps) == 1)
+        assert("bash" in deps)
+
     @override_settings(PKGBUILDREPOS_PATH="./tests/pkgbuildrepos", PACMANREPO_PATH="./tests/repo")
     def test_versioned_dependencies(self):
         alpm = ALPMHelper()
