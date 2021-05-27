@@ -6,7 +6,7 @@ import logging
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
-from cd_manager.pkgbuild import SRCINFO
+from cd_manager.alpm import ALPMHelper
 from abs_cd.confighelper import Confighelper
 
 
@@ -44,7 +44,7 @@ class PackageSystem:
 
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
-        packages = SRCINFO(os.path.join(settings.PKGBUILDREPOS_PATH, pkgbase.name, ".SRCINFO")).getcontent()['pkgname']
+        packages = ALPMHelper.get_srcinfo(pkgbase.name).getcontent()['pkgname']
         output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None
