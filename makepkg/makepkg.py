@@ -45,8 +45,6 @@ class PackageSystem:
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
         packages = SRCINFO(os.path.join(settings.PKGBUILDREPOS_PATH, pkgbase.name, ".SRCINFO")).getcontent()['pkgname']
-        if isinstance(packages, str):
-            packages = [packages, ]
         output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None

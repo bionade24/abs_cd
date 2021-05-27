@@ -9,6 +9,7 @@ SourceParts = Enum('SourceParts', 'folder vcs url fragment')
 
 
 class SRCINFO:
+
     def __init__(self, filepath):
         """
         Parses and holds data of a .SRCINFO file.
@@ -26,13 +27,9 @@ class SRCINFO:
             key = array[0]
             value = array[1]
             if not return_dict.get(key):
-                return_dict[key] = value  # set new value
+                return_dict[key] = [value]  # set new value
             else:
-                if not isinstance(return_dict[key], list):
-                    # convert value to array and append
-                    return_dict[key] = [return_dict[key], value]
-                else:
-                    return_dict[key].append(value)  # append to array
+                return_dict[key].append(value)  # append to array
         self._content = return_dict
 
     def getcontent(self):
