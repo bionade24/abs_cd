@@ -7,6 +7,9 @@ from collections import defaultdict
 
 SourceParts = Enum('SourceParts', 'folder vcs url fragment')
 
+# pkgname can actually be multiple if one pkgbase for 2 packages
+single_value = ['pkgbase', 'pkgdesc', 'pkgver', 'pkgrel', 'epoch', 'url']
+
 
 class SRCINFO:
 
@@ -26,7 +29,9 @@ class SRCINFO:
             array = line.split(" = ")
             key = array[0]
             value = array[1]
-            if not return_dict.get(key):
+            if key in single_value:
+                return_dict[key] = value
+            elif not return_dict.get(key):
                 return_dict[key] = [value]  # set new value
             else:
                 return_dict[key].append(value)  # append to array
