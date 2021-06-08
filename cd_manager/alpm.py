@@ -92,11 +92,14 @@ class ALPMHelper:
            pot_dep is expected to be in the CI database."""
         if not wanted_dep.version or not wanted_dep.cmp_func:
             return True
-        pot_dep_provides = ALPMHelper.get_srcinfo(pot_dep).getcontent()['provides']
+        pot_dep_srcinfo = ALPMHelper.get_srcinfo(pot_dep).getcontent()
+        pot_dep_provides = pot_dep_srcinfo['provides']
         if wanted_dep.depends_entry in pot_dep_provides:
             return True
         for entry in pot_dep_provides:
             pot_dep = ALPMHelper.parse_dep_req(entry)
+            if not pot_dep.version:
+                pot_dep.version = pot_dep_srcinfo['pkgver']
             if wanted_dep.cmp_func(pyalpm.vercmp(wanted_dep.version, pot_dep.version)):
                 return True
         return False
