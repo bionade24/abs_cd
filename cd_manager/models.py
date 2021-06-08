@@ -89,6 +89,7 @@ class Package(models.Model):
                 query = Package.objects.filter(name__icontains=wanted_dep.name)
                 if len(query) == 0:
                     continue
+                dep_pkgobj = None
                 for potdep in query:
                     if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                         dep_pkgobj = potdep
