@@ -98,6 +98,8 @@ class ALPMHelper:
             return True
         for entry in pot_dep_provides:
             pot_dep = ALPMHelper.parse_dep_req(entry)
+            if wanted_dep.name != pot_dep.name:
+                continue
             if not pot_dep.version:
                 pot_dep.version = pot_dep_srcinfo['pkgver']
             if wanted_dep.cmp_func(pyalpm.vercmp(wanted_dep.version, pot_dep.version)):
