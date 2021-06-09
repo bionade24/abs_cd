@@ -50,6 +50,9 @@ class PackageSystem:
         pkgbase.build_output = None
         pkgbase.save()
         try:
+            old_pkgs = list()
+            for pkg in packages:
+                old_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
             # Use microseconds as a fake UUID for container names to
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
@@ -66,15 +69,17 @@ class PackageSystem:
                                                           },
                                                  name=container_name)
             pkgbase.build_status = 'SUCCESS'
-            pkg_paths = list()
+            new_pkgs = list()
             for pkg in packages:
-                pkg_paths.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
-            if len(pkg_paths) == 0:
+                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
+            pkg_paths = list(set(new_pkgs) - set(old_pkgs))
+            if len(old_pkgs) == 0 and len(new_pkgs) == 0:
                 pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
             try:
-                logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
-                                              + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo').
-                               stderr.decode('UTF-8').strip('\n'))
+                if len(pkg_paths) != 0:
+                    logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
+                                                  + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo').
+                                   stderr.decode('UTF-8').strip('\n'))
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
