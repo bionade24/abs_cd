@@ -45,7 +45,7 @@ class PackageSystem:
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
         packages = ALPMHelper.get_srcinfo(pkgbase.name).getcontent()['pkgname']
-        output = None
+        container_output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None
         pkgbase.save()
@@ -56,7 +56,7 @@ class PackageSystem:
             # Use microseconds as a fake UUID for container names to
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
-            output = PackageSystem \
+            container_output = PackageSystem \
                     ._docker_conn.containers.run(image='abs-cd/makepkg', remove=False,
                                                  mem_limit='8G', memswap_limit='8G', cpu_shares=128,
                                                  # TODO: Don't hardcode host paths
@@ -77,17 +77,19 @@ class PackageSystem:
                 pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
             try:
                 if len(pkg_paths) != 0:
-                    logger.warning(subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
-                                                  + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo').
-                                   stderr.decode('UTF-8').strip('\n'))
+                    repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
+                                                     + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo') \
+                                                     .stderr.decode('UTF-8').strip('\n')
+                    if repo_add_output:
+                        logger.warning(repo_add_output)
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
             pkgbase.build_status = 'FAILURE'
-            output = e.container.logs()
+            container_output = e.container.logs()
         finally:
             self._docker_conn.containers.get(container_name).remove()
-            if output:
-                pkgbase.build_output = output.decode('utf-8')
+            if container_output:
+                pkgbase.build_output = container_output.decode('utf-8')
         pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
         pkgbase.save()
