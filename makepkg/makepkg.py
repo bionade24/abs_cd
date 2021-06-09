@@ -72,16 +72,18 @@ class PackageSystem:
             new_pkgs = list()
             for pkg in packages:
                 new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
-            pkg_paths = list(set(new_pkgs) - set(old_pkgs))
             if len(old_pkgs) == 0 and len(new_pkgs) == 0:
                 pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
+            else:
+                pkg_paths = list(set(new_pkgs) - set(old_pkgs))
+            if len(pkg_paths) == 0:
+                pkg_paths = new_pkgs
             try:
-                if len(pkg_paths) != 0:
-                    repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
-                                                     + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo') \
-                                                     .stderr.decode('UTF-8').strip('\n')
-                    if repo_add_output:
-                        logger.warning(repo_add_output)
+                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
+                                                 + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo') \
+                                                 .stderr.decode('UTF-8').strip('\n')
+                if repo_add_output:
+                    logger.warning(repo_add_output)
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
