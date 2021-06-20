@@ -1,0 +1,35 @@
+{% extends 'base_abs-cd.html' %}
+
+{% autoescape on %}
+{% block title %}<title> ABS_CD log </title>{% endblock title %}
+
+{% block style %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'cd_manager/package_list.css' %}">
+{% endblock style %}
+
+{% block content %}
+</br>
+<table>
+  <thead>
+    <tr>
+      <th>Container log</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <div id="build_output" class="console_output">
+          {% if log %}
+          {{ log|linebreaksbr}}
+          {% else %}
+          There is no log available.
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+{% endblock content %}
+{% endautoescape %}
+

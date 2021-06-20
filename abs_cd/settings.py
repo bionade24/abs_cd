@@ -44,7 +44,7 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'cd_manager.apps.Abs_cd_AdminSite',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_crontab',
     'sortable_listview',
-    'cd_manager']
+    'cd_manager.apps.InterfaceConfig']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

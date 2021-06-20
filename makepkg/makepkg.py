@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
 from cd_manager.alpm import ALPMHelper
-from abs_cd.confighelper import Confighelper
+from .docker_conn import Connection
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
@@ -15,31 +15,22 @@ logger = logging.getLogger(__name__)
 
 
 class PackageSystem:
-    _docker_conn = None
 
     def __init__(self):
-        if not PackageSystem._docker_conn:
-            PackageSystem._docker_conn = docker.DockerClient(base_url=Confighelper()
-                                                             .get_setting('DOCKER_SOCKET',
-                                                                          'unix:///var/run/docker.sock'),
-                                                             version='auto', tls=False)
-        else:
-            logger.debug("Connection to Docker socket already established")
 
-        ######
         def generate_image():
             logger.info("Generating new image abs-cd/makepkg, please wait")
-            PackageSystem._docker_conn.images.build(
+            Connection().images.build(
                 tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
         ######
         try:
             one_week_ago = timezone.now() - timedelta(days=7)
-            image = PackageSystem._docker_conn.images.get('abs-cd/makepkg')
+            image = PackageSystem.Connection().images.get('abs-cd/makepkg')
             if datetime.utcfromtimestamp(image.history()[0]['Created']) < one_week_ago:
                 generate_image()
         except docker.errors.ImageNotFound:
             generate_image()
-        self._repo = PackageSystem._docker_conn.volumes.get(
+        self._repo = PackageSystem.Connection().volumes.get(
             "abs_cd_local-repo")
 
     # pkgbase should be type cd_manager.models.Package()
@@ -57,17 +48,17 @@ class PackageSystem:
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
             container_output = PackageSystem \
-                    ._docker_conn.containers.run(image='abs-cd/makepkg', remove=False,
-                                                 mem_limit='8G', memswap_limit='8G', cpu_shares=128,
-                                                 # TODO: Don't hardcode host paths
-                                                 volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
-                                                          {'bind': '/src', 'mode': 'ro'},
-                                                          'abs_cd_local-repo':
-                                                          {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
-                                                          '/var/cache/pacman/pkg':
-                                                          {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
-                                                          },
-                                                 name=container_name)
+                .Connection().containers.run(image='abs-cd/makepkg', remove=False,
+                                             mem_limit='8G', memswap_limit='8G', cpu_shares=128,
+                                             # TODO: Don't hardcode host paths
+                                             volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
+                                                      {'bind': '/src', 'mode': 'ro'},
+                                                      'abs_cd_local-repo':
+                                                      {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
+                                                      '/var/cache/pacman/pkg':
+                                                      {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
+                                                      },
+                                             name=container_name)
             pkgbase.build_status = 'SUCCESS'
             new_pkgs = list()
             for pkg in packages:
@@ -90,7 +81,7 @@ class PackageSystem:
             pkgbase.build_status = 'FAILURE'
             container_output = e.container.logs()
         finally:
-            self._docker_conn.containers.get(container_name).remove()
+            self.Connection().containers.get(container_name).remove()
             if container_output:
                 pkgbase.build_output = container_output.decode('utf-8')
         pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")

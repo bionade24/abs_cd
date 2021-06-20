@@ -1,15 +1,17 @@
 from django.contrib import admin
-from cd_manager.models import Package
 from django.utils.html import format_html
 from django.urls import reverse
 from django.conf.urls import url
 from django.http.response import HttpResponseRedirect
 from multiprocessing import Process
+from cd_manager.models import Package
+from cd_manager.admin_site import site
+
 
 # Register your models here.
 
 
-@admin.register(Package)
+@admin.register(Package, site=site)
 class PackageAdmin(admin.ModelAdmin):
     list_display = ('name', 'build_status',
                     'build_date',
@@ -44,11 +46,13 @@ class PackageAdmin(admin.ModelAdmin):
     package_actions.allow_tags = True
 
     def run_cd(self, request, package_name, *args, **kwargs):
+        request.current_app = self.admin_site.name
         pkg = Package.objects.get(name=package_name)
         Process(target=pkg.build).start()
         return HttpResponseRedirect('/admin/cd_manager/package/?o=2.1')
 
     def rebuildtree(self, request, package_name, *args, **kwargs):
+        request.current_app = self.admin_site.name
         pkg = Package.objects.get(name=package_name)
         Process(target=pkg.rebuildtree).start()
         return HttpResponseRedirect('/admin/cd_manager/package/?o=2.1')
