@@ -1,7 +1,5 @@
 {% extends "admin/base.html" %}
 
-{% block styleshee
-
 {% block title %}{{'ABS_CD admin'}}{% endblock %}
 
 {% block branding %}
@@ -9,5 +7,10 @@
 {% endblock %}
 
 {% block extrastyle %}{{ block.super }}{% load static %}<link rel="stylesheet" type="text/css" href="{% static "admin/css/abs_cd.css" %}" />{% endblock %}
-
 {% block nav-global %}{% endblock %}
+
+{% block footer %}
+{% if has_permission %}
+<p class="admin_option"><a href="{% url 'admin:abs_cd_log' %}">ABS_CD log</a></p>
+{% endif %}
+{% endblock %}

@@ -56,3 +56,4 @@ class PackageAdmin(admin.ModelAdmin):
         pkg = Package.objects.get(name=package_name)
         Process(target=pkg.rebuildtree).start()
         return HttpResponseRedirect('/admin/cd_manager/package/?o=2.1')
+
