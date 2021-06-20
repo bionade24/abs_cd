@@ -62,6 +62,7 @@ class TestALPMHelper(TestCase):
                 if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                     pkgs.append(potdep.name)
                     break
+        # TODO: Package 2 packages one with a versioned depends and a fitting unversioned provides
         assert('sdformat-6' in pkgs)
         assert('ignition-transport-4' in pkgs)
         assert('sdformat' not in pkgs)
