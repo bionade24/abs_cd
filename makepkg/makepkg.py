@@ -25,12 +25,12 @@ class PackageSystem:
         ######
         try:
             one_week_ago = timezone.now() - timedelta(days=7)
-            image = PackageSystem.Connection().images.get('abs-cd/makepkg')
+            image = Connection().images.get('abs-cd/makepkg')
             if datetime.utcfromtimestamp(image.history()[0]['Created']) < one_week_ago:
                 generate_image()
         except docker.errors.ImageNotFound:
             generate_image()
-        self._repo = PackageSystem.Connection().volumes.get(
+        self._repo = Connection().volumes.get(
             "abs_cd_local-repo")
 
     # pkgbase should be type cd_manager.models.Package()
@@ -47,18 +47,18 @@ class PackageSystem:
             # Use microseconds as a fake UUID for container names to
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
-            container_output = PackageSystem \
-                .Connection().containers.run(image='abs-cd/makepkg', remove=False,
-                                             mem_limit='8G', memswap_limit='8G', cpu_shares=128,
-                                             # TODO: Don't hardcode host paths
-                                             volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
-                                                      {'bind': '/src', 'mode': 'ro'},
-                                                      'abs_cd_local-repo':
-                                                      {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
-                                                      '/var/cache/pacman/pkg':
-                                                      {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
-                                                      },
-                                             name=container_name)
+            container_output = \
+                Connection().containers.run(image='abs-cd/makepkg', remove=False,
+                                            mem_limit='8G', memswap_limit='8G', cpu_shares=128,
+                                            # TODO: Don't hardcode host paths
+                                            volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
+                                                     {'bind': '/src', 'mode': 'ro'},
+                                                     'abs_cd_local-repo':
+                                                     {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
+                                                     '/var/cache/pacman/pkg':
+                                                     {'bind': '/var/cache/pacman/pkg', 'mode': 'rw'},
+                                                     },
+                                            name=container_name)
             pkgbase.build_status = 'SUCCESS'
             new_pkgs = list()
             for pkg in packages:
@@ -81,7 +81,7 @@ class PackageSystem:
             pkgbase.build_status = 'FAILURE'
             container_output = e.container.logs()
         finally:
-            self.Connection().containers.get(container_name).remove()
+            Connection().containers.get(container_name).remove()
             if container_output:
                 pkgbase.build_output = container_output.decode('utf-8')
         pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
