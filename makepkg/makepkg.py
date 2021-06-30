@@ -17,21 +17,21 @@ logger = logging.getLogger(__name__)
 class PackageSystem:
 
     def __init__(self):
-
-        def generate_image():
-            logger.info("Generating new image abs-cd/makepkg, please wait")
-            Connection().images.build(
-                tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
-        ######
         try:
             one_week_ago = timezone.now() - timedelta(days=7)
             image = Connection().images.get('abs-cd/makepkg')
             if datetime.utcfromtimestamp(image.history()[0]['Created']) < one_week_ago:
-                generate_image()
+                self._generate_image()
         except docker.errors.ImageNotFound:
-            generate_image()
+            self._generate_image()
         self._repo = Connection().volumes.get(
             "abs_cd_local-repo")
+
+    @staticmethod
+    def _generate_image():
+        logger.info("Generating new image abs-cd/makepkg, please wait")
+        Connection().images.build(
+            tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
 
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):
