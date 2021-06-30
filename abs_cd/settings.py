@@ -147,6 +147,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
 # Paths for abs_cd (cd_manager & makepkg module)
+ABS_CD_PROJECT_DIR = "/opt/abs_cd"
 PKGBUILDREPOS_PATH = "/var/packages"
 PACMANREPO_PATH = "/repo"
 

@@ -31,7 +31,7 @@ class PackageSystem:
     def _generate_image():
         logger.info("Generating new image abs-cd/makepkg, please wait")
         Connection().images.build(
-            tag='abs-cd/makepkg', path=os.path.join(os.getcwd(), 'makepkg/docker'), rm=True, pull=True)
+            tag='abs-cd/makepkg', path=os.path.join(settings.ABS_CD_PROJECT_DIR, 'makepkg/docker'), rm=True, pull=True)
 
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase):

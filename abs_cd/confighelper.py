@@ -6,6 +6,7 @@ import shutil
 class Confighelper:
 
     def __init__(self):
+        # TODO: Use ABS_CD_PROJECT_DIR here, too.
         self.setting_path = os.path.join(os.curdir, 'data', 'settings.ini')
         template_path = os.path.join(os.curdir, 'settings.ini.template')
         if not os.path.isfile(self.setting_path):
