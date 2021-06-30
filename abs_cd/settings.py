@@ -149,6 +149,7 @@ STATIC_URL = '/static/'
 # Paths for abs_cd (cd_manager & makepkg module)
 ABS_CD_PROJECT_DIR = "/opt/abs_cd"
 PKGBUILDREPOS_PATH = "/var/packages"
+PKGBUILDREPOS_HOST_PATH = helper.get_setting('PKGBUILDREPOS_HOST_PATH', '/var/local/abs_cd/packages')
 PACMANREPO_PATH = "/repo"
 
 LOGGING = {

@@ -50,8 +50,7 @@ class PackageSystem:
             container_output = \
                 Connection().containers.run(image='abs-cd/makepkg', remove=False,
                                             mem_limit='8G', memswap_limit='8G', cpu_shares=128,
-                                            # TODO: Don't hardcode host paths
-                                            volumes={f'/var/local/abs_cd/packages/{pkgbase.name}':
+                                            volumes={os.path.join(settings.PKGBUILDREPOS_HOST_PATH, pkgbase.name):
                                                      {'bind': '/src', 'mode': 'ro'},
                                                      'abs_cd_local-repo':
                                                      {'bind': settings.PACMANREPO_PATH, 'mode': 'rw'},
