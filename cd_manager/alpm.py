@@ -83,7 +83,7 @@ class ALPMHelper:
         for sep in seperators:
             if sep[0] in dep:
                 parts = dep.split(sep[0])
-                return Dependency(parts[0], dep, parts[1], parts[1])
+                return Dependency(parts[0], dep, parts[1], sep[1])
         return Dependency(dep, None, None, None)
 
     @staticmethod
