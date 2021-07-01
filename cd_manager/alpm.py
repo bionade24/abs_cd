@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 @dataclass
 class Dependency:
     name: str
-    depends_entry: Optional[str]
+    depends_entry: str
     version: Optional[str]
     cmp_func: Optional[Callable[[int], bool]]
 
@@ -84,7 +84,7 @@ class ALPMHelper:
             if sep[0] in dep:
                 parts = dep.split(sep[0])
                 return Dependency(parts[0], dep, parts[1], sep[1])
-        return Dependency(dep, None, None, None)
+        return Dependency(dep, dep, None, None)
 
     @staticmethod
     def satifies_ver_req(wanted_dep: Dependency, pot_dep: str):
