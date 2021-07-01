@@ -28,13 +28,13 @@ def get_deps(pkgname, level=0, visited=[]):
 class TestALPMHelper(TestCase):
 
     def setUp(self):
-        pkgs = ["gazebo-10", "ignition-transport", "ignition-transport-4", "sdformat", "sdformat-6"]
+        pkgs = ["gazebo-10", "ignition-transport", "ignition-transport-4", "sdformat", "sdformat-6",
+                "seafile-client", "seafile"]
         for package in pkgs:
             Package.objects.create(name=package,
                                    repo_url=f"https://aur.archlinux.org/{package}.git",
                                    aur_push=False)
 
-    # TODO: Rewrite tests to work without ROS packages in database
     # A ROS package with very minimal depencencies
     def test_ros_melodic_genmsg(self):
         get_deps("ros-melodic-genmsg")
@@ -51,21 +51,29 @@ class TestALPMHelper(TestCase):
     @override_settings(PKGBUILDREPOS_PATH="./tests/pkgbuildrepos", PACMANREPO_PATH="./tests/repo")
     def test_versioned_dependencies(self):
         alpm = ALPMHelper()
-        pkgs = list()
-        deps = alpm.get_deps("gazebo-10")
-        for wanted_dep in deps:
-            wanted_dep = ALPMHelper.parse_dep_req(wanted_dep)
-            query = Package.objects.filter(name__icontains=wanted_dep.name)
-            if len(query) == 0:
-                continue
-            for potdep in query:
-                if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
-                    pkgs.append(potdep.name)
-                    break
-        # TODO: Package 2 packages one with a versioned depends and a fitting unversioned provides
-        assert('sdformat-6' in pkgs)
-        assert('ignition-transport-4' in pkgs)
-        assert('sdformat' not in pkgs)
-        assert('ignition-transport' not in pkgs)
+
+        def figure_out_deps(pkgname):
+            pkgs = list()
+            deps = alpm.get_deps(pkgname)
+            for wanted_dep in deps:
+                wanted_dep = ALPMHelper.parse_dep_req(wanted_dep)
+                query = Package.objects.filter(name__icontains=wanted_dep.name)
+                if len(query) == 0:
+                    continue
+                for potdep in query:
+                    if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
+                        pkgs.append(potdep.name)
+                        break
+            return pkgs
+
+        gazebo_deps = figure_out_deps("gazebo-10")
+        assert('sdformat-6' in gazebo_deps)
+        assert('ignition-transport-4' in gazebo_deps)
+        assert('sdformat' not in gazebo_deps)
+        assert('ignition-transport' not in gazebo_deps)
+
+        seafile_client_deps = figure_out_deps("seafile-client")
+        assert('seafile' in seafile_client_deps)
+
         if os.path.isdir("./tests"):
             shutil.rmtree("./tests")
