@@ -91,6 +91,7 @@ class Package(models.Model):
                     continue
                 dep_pkgobj = None
                 for potdep in query:
+                    potdep.pkgbuild_repo_status_check()
                     if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                         dep_pkgobj = potdep
                         logger.debug(f"{potdep.name} satifies dependency requirement {wanted_dep.depends_entry} \
@@ -104,7 +105,8 @@ class Package(models.Model):
                 if dep_pkgobj.build_status != 'SUCCESS' or \
                    dep_pkgobj.build_date < one_week_ago or \
                    force_rebuild:
-                    built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages)
+                    built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages,
+                                                      repo_status_check=False)
                 else:
                     logger.info(
                         f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
