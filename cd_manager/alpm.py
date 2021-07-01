@@ -90,7 +90,7 @@ class ALPMHelper:
     def satifies_ver_req(wanted_dep: Dependency, pot_dep: str):
         """Checks if pot_dep provides the wanted dep.
            pot_dep is expected to be in the CI database."""
-        if not wanted_dep.version or not wanted_dep.cmp_func:
+        if(not wanted_dep.version or not wanted_dep.cmp_func) and wanted_dep.name == pot_dep:
             return True
         pot_dep_srcinfo = ALPMHelper.get_srcinfo(pot_dep).getcontent()
         pot_dep_provides = pot_dep_srcinfo['provides']
