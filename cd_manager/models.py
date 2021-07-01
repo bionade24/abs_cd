@@ -93,8 +93,12 @@ class Package(models.Model):
                 for potdep in query:
                     if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                         dep_pkgobj = potdep
+                        logger.debug(f"{potdep.name} satifies dependency requirement {wanted_dep.depends_entry} \
+                                       of {self.name}.")
                         break
                 if not dep_pkgobj:
+                    logger.debug(f"No package satisfiying {wanted_dep.depends_entry} in local database. \
+                                   Trying next dependency of {self.name}")
                     continue
                 one_week_ago = timezone.now() - timedelta(days=7)
                 if dep_pkgobj.build_status != 'SUCCESS' or \
