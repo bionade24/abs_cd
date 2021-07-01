@@ -91,7 +91,7 @@ class Package(models.Model):
                     continue
                 dep_pkgobj = None
                 for potdep in query:
-                    potdep.pkgbuild_repo_status_check()
+                    potdep.pkgbuild_repo_status_check()  # For case only latest version of potdep satifies wanted_dep
                     if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                         dep_pkgobj = potdep
                         logger.debug(f"{potdep.name} satifies dependency requirement {wanted_dep.depends_entry} \
