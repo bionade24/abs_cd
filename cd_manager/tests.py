@@ -29,7 +29,7 @@ class TestALPMHelper(TestCase):
 
     def setUp(self):
         pkgs = ["gazebo-10", "ignition-transport", "ignition-transport-4", "sdformat", "sdformat-6",
-                "seafile-client", "seafile"]
+                "seafile-client", "seafile", "opencv3-opt", "ffmpeg-libfdk_aac"]
         for package in pkgs:
             Package.objects.create(name=package,
                                    repo_url=f"https://aur.archlinux.org/{package}.git",
@@ -40,6 +40,7 @@ class TestALPMHelper(TestCase):
         get_deps("ros-melodic-genmsg")
 
     # A ROS package with a lot of dependencies
+    @override_settings(PKGBUILDREPOS_PATH="./tests/pkgbuildrepos", PACMANREPO_PATH="./tests/repo")
     def test_ros_melodic_desktop_full(self):
         get_deps("ros-melodic-desktop-full")
 
@@ -74,6 +75,9 @@ class TestALPMHelper(TestCase):
 
         seafile_client_deps = figure_out_deps("seafile-client")
         assert('seafile' in seafile_client_deps)
+
+        opencv3_opt_deps = figure_out_deps("opencv3-opt")
+        assert('ffmpeg-libfdk_aac' in opencv3_opt_deps)
 
         if os.path.isdir("./tests"):
             shutil.rmtree("./tests")

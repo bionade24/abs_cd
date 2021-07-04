@@ -89,21 +89,23 @@ class ALPMHelper:
     @staticmethod
     def satifies_ver_req(wanted_dep: Dependency, pot_dep: str):
         """Checks if pot_dep provides the wanted dep.
-           pot_dep is expected to be in the CI database."""
+           pot_dep is a pkg or pkgbase expected to be in the CI database."""
         if(not wanted_dep.version or not wanted_dep.cmp_func) and wanted_dep.name == pot_dep:
             return True
         pot_dep_srcinfo = ALPMHelper.get_srcinfo(pot_dep).getcontent()
-        if wanted_dep.depends_entry in pot_dep_srcinfo['provides']:
+        if wanted_dep.depends_entry in pot_dep_srcinfo['provides']:  # Speed process up
             return True
         for entry in pot_dep_srcinfo['provides']:
-            pot_dep = ALPMHelper.parse_dep_req(entry)
-            if wanted_dep.name != pot_dep.name:
+            provides_dep = ALPMHelper.parse_dep_req(entry)
+            if wanted_dep.name != provides_dep.name:
                 continue
-            if not pot_dep.version:
-                pot_dep.version = pot_dep_srcinfo['pkgver']
-            if wanted_dep.cmp_func(pyalpm.vercmp(wanted_dep.version, pot_dep.version)):
+            if not wanted_dep.version or not wanted_dep.cmp_func:
                 return True
-        for entry in pot_dep_srcinfo['pkgname']:
+            if not provides_dep.version:
+                provides_dep.version = pot_dep_srcinfo['pkgver']
+            if wanted_dep.cmp_func(pyalpm.vercmp(wanted_dep.version, provides_dep.version)):
+                return True
+        for entry in pot_dep_srcinfo['pkgname']:  # In case the pot_dep is a pkgbase
             if wanted_dep.name == entry and wanted_dep.version == pot_dep_srcinfo['pkgver']:
                 return True
         return False
