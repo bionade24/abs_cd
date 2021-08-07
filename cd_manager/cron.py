@@ -1,7 +1,7 @@
 import logging
 from pyalpm import vercmp
 from cd_manager.models import Package
-from cd_manager.alpm import ALPMHelper
+from cd_manager.alpm import ALPMHelper, PackageNotFoundError
 
 
 logger = logging.getLogger(__name__)
@@ -12,10 +12,14 @@ def check_for_new_pkgversions():
     try:
         for pkg in Package.objects.all():
             pkg.pkgbuild_repo_status_check()
-            db_pkginfo = ALPMHelper().get_pkg_from_syncdbs(pkg.name)
+            try:
+                db_pkginfo_version = ALPMHelper().get_pkg_from_syncdbs(pkg.name).version
+            except PackageNotFoundError:
+                db_pkginfo_version = '-1'
             srcinfo = ALPMHelper.get_srcinfo(pkg.name).getcontent()
+            srcinfo_version = f"{srcinfo['pkgver']}-{srcinfo['pkgrel']}"
             # vercmp < 0 mean input 2 is higher, see man vercmp
-            if vercmp(db_pkginfo.version, f"{srcinfo['pkgver']}-{srcinfo['pkgrel']}") < 0:
+            if vercmp(db_pkginfo_version, srcinfo_version) < 0:
                 try:
                     pkg.build(repo_status_check=False)
                 except BaseException:
