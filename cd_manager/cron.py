@@ -16,7 +16,10 @@ def check_for_new_pkgversions():
             srcinfo = ALPMHelper.get_srcinfo(pkg.name).getcontent()
             # vercmp < 0 mean input 2 is higher, see man vercmp
             if vercmp(db_pkginfo.version, f"{srcinfo['pkgver']}-{srcinfo['pkgrel']}") < 0:
-                pkg.build(repo_status_check=False)
+                try:
+                    pkg.build(repo_status_check=False)
+                except BaseException:
+                    logger.exception(f"An automatic build of package {pkg.name} was triggered but failed")
     except BaseException:
         logger.exception("Cronjob checking for new pkg versions in all repos failed:")
 
