@@ -70,7 +70,8 @@ class PackageSystem:
                 pkg_paths = new_pkgs
             try:
                 repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
-                                                 + pkg_paths, check=True, stderr=subprocess.PIPE, cwd='/repo') \
+                                                 + pkg_paths, check=True, stderr=subprocess.PIPE,
+                                                 cwd=settings.PACMANREPO_PATH) \
                                                  .stderr.decode('UTF-8').strip('\n')
                 if repo_add_output:
                     logger.warning(repo_add_output)
