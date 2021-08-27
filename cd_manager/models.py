@@ -1,7 +1,10 @@
 import os
 import shutil
 import logging
+import subprocess
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
 from cd_manager.alpm import ALPMHelper
@@ -13,6 +16,8 @@ from git.exc import GitCommandError
 
 
 logger = logging.getLogger(__name__)
+
+REPO_REMOVE_BIN="/usr/bin/repo-remove"
 
 
 class Package(models.Model):
@@ -133,3 +138,23 @@ class Package(models.Model):
             self.aur_push_output = str(e)
         finally:
             self.save()
+
+
+@receiver(pre_delete, sender=Package)
+def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
+    package_src = os.path.join(settings.PKGBUILDREPOS_PATH, instance.name)
+    if os.path.exists(package_src):
+        packages = ALPMHelper.get_srcinfo(instance.name).getcontent()['pkgname']
+        shutil.rmtree(package_src)
+    else:
+        packages = [instance.name]
+    for pkg in packages:
+        try:
+            repo_add_output = subprocess.run([REPO_REMOVE_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst', pkg],
+                                             stderr=subprocess.PIPE, cwd=settings.PACMANREPO_PATH) \
+                                             .stderr.decode('UTF-8').strip('\n')
+            if repo_add_output:
+                logger.warning(repo_add_output)
+        except subprocess.CalledProcessError as e:
+            logger.warning(e.sdout + "\n This is itentional if the package was never built.")
+
