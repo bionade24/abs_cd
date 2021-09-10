@@ -8,7 +8,7 @@ from collections import defaultdict
 SourceParts = Enum('SourceParts', 'folder vcs url fragment')
 
 # pkgname can actually be multiple if one pkgbase for 2 packages
-single_value = ['pkgbase', 'pkgdesc', 'pkgver', 'pkgrel', 'epoch', 'url']
+single_value = ('pkgbase', 'pkgdesc', 'pkgver', 'pkgrel', 'epoch', 'url')
 
 
 class SRCINFO:
