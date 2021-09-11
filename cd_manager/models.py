@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import glob
 import subprocess
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -144,12 +145,19 @@ class Package(models.Model):
 def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
     package_src = os.path.join(settings.PKGBUILDREPOS_PATH, instance.name)
     if os.path.exists(package_src):
-        packages = ALPMHelper.get_srcinfo(instance.name).getcontent()['pkgname']
+        srcinfo = ALPMHelper.get_srcinfo(instance.name).getcontent()
+        packages = srcinfo['pkgname']
+        pkg_version = srcinfo['pkgver'] + '-' + srcinfo['pkgrel']
+        if 'epoch' in srcinfo:
+            pkg_version = srcinfo['epoch'] + ':' + pkg_version
+        logger.debug(f"Removing git repo of {instance.name}: {package_src}")
         shutil.rmtree(package_src)
     else:
         packages = [instance.name]
+        pkg_version = None
     for pkg in packages:
         try:
+            logger.debug(f"Trying to remove {pkg} from local repo database")
             repo_add_output = subprocess.run([REPO_REMOVE_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst', pkg],
                                              stderr=subprocess.PIPE, cwd=settings.PACMANREPO_PATH) \
                                              .stderr.decode('UTF-8').strip('\n')
@@ -157,4 +165,7 @@ def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
                 logger.warning(repo_add_output)
         except subprocess.CalledProcessError as e:
             logger.warning(e.sdout + "\n This is itentional if the package was never built.")
-
+        if pkg_version:
+            for file in glob.iglob(f"/repo/{pkg}-{pkg_version}-*.pkg.tar.*"):
+                logger.debug(f"Deleting {file}")
+                os.remove(file)
