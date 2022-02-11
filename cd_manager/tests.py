@@ -29,7 +29,8 @@ class TestALPMHelper(TestCase):
 
     def setUp(self):
         pkgs = ["gazebo-10", "ignition-transport", "ignition-transport-4", "sdformat", "sdformat-6",
-                "seafile-client", "seafile", "opencv3-opt", "ffmpeg-libfdk_aac"]
+                "seafile-client", "seafile", "opencv3-opt", "ffmpeg-libfdk_aac", "nheko", "mtxclient",
+                "lmdbxx"]
         for package in pkgs:
             Package.objects.create(name=package,
                                    repo_url=f"https://aur.archlinux.org/{package}.git",
@@ -55,7 +56,7 @@ class TestALPMHelper(TestCase):
 
         def figure_out_deps(pkgname):
             pkgs = list()
-            deps = alpm.get_deps(pkgname)
+            deps = alpm.get_deps(pkgname, rundeps=True, makedeps=True)
             for wanted_dep in deps:
                 wanted_dep = ALPMHelper.parse_dep_req(wanted_dep)
                 query = Package.objects.filter(name__icontains=wanted_dep.name)
@@ -78,6 +79,10 @@ class TestALPMHelper(TestCase):
 
         opencv3_opt_deps = figure_out_deps("opencv3-opt")
         assert('ffmpeg-libfdk_aac' in opencv3_opt_deps)
+
+        nheko_deps = figure_out_deps("nheko")
+        assert('mtxclient' in nheko_deps)
+        assert('lmdbxx' in nheko_deps)
 
         if os.path.isdir("./tests"):
             shutil.rmtree("./tests")
