@@ -18,7 +18,7 @@ from git.exc import GitCommandError
 
 logger = logging.getLogger(__name__)
 
-REPO_REMOVE_BIN="/usr/bin/repo-remove"
+REPO_REMOVE_BIN = "/usr/bin/repo-remove"
 
 
 class Package(models.Model):
