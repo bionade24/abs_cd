@@ -1,7 +1,10 @@
+import logging
 from django.contrib import admin
 from django.conf.urls import url
 from django.shortcuts import render
 from makepkg.docker_conn import Connection
+
+logger = logging.getLogger(__name__)
 
 
 class CustomAdminSite(admin.AdminSite):
@@ -20,10 +23,11 @@ class CustomAdminSite(admin.AdminSite):
     def show_abs_cd_log(self, request, *args, **kwargs):
         request.current_app = self.name
         try:
-            # TODO: don't hardcode
-            log = Connection().containers.get('abs_cd_abs_cd_1').logs().decode('utf-8')
+            container = Connection().containers.list(filters={"label": "org.abs-cd=webcd_manager"})[0]
+            log = container.logs().decode('utf-8')
         except BaseException:
             log = None
+            logger.exception("Getting log from container failed.")
         return render(request, 'admin/abs_cd_log.html',
                       context={'log': log})
 
