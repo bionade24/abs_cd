@@ -32,7 +32,6 @@ class MakepkgContainer:
         self.group = None
         self.run_pacman_syu = None
         self.user = None
-        self.download_keys = None
 
     @staticmethod
     def copy_tree(src, dst, symlinks=False, ignore=None):
@@ -108,10 +107,6 @@ class MakepkgContainer:
             '-p',
             action='store_true',
             help="Run a pacman -Syu before building")
-        self.parser.add_argument(
-            '-z',
-            action='store_false',
-            help="Do not automatically download missing PGP keys")
 
         namespace, self.rest = self.parser.parse_known_args()
 
@@ -121,7 +116,6 @@ class MakepkgContainer:
 
         self.command = namespace.e
         self.run_pacman_syu = namespace.p
-        self.download_keys = namespace.z
         build_user_uid = pwd.getpwnam("mkpkg").pw_uid
         build_user_gid = pwd.getpwnam("mkpkg").pw_gid
         self.copy_tree("/src/", "/build")
@@ -142,18 +136,6 @@ class MakepkgContainer:
         else:
             # translate list object to space seperated arguments
             flags = self.rest
-
-        if self.download_keys:
-            gnupg = os.path.expanduser("~mkpkg/.gnupg")
-            os.makedirs(gnupg, mode=0o700, exist_ok=True)
-            self.change_user_or_gid(
-                build_user_uid, pwd.getpwnam("mkpkg").pw_gid, "/build")
-            self.append_to_file(gnupg + "/gpg.conf", "keyserver-options auto-key-retrieve\n\
-                auto-key-locate hkps://keyserver.ubuntu.com\n")
-            self.change_permissions_recursively(gnupg, 0o700)
-            self.change_permissions_recursively(gnupg + "/gpg.conf", 0o600)
-            self.change_user_or_gid(pwd.getpwnam(
-                "mkpkg").pw_uid, pwd.getpwnam("mkpkg").pw_gid, "/build")
 
         # if a command is specified in -e, then run it
         if self.command:
