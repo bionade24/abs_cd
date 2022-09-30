@@ -43,7 +43,7 @@ class PackageSystem:
         try:
             old_pkgs = list()
             for pkg in packages:
-                old_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
+                old_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.zst")))
             # Use microseconds as a fake UUID for container names to
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
@@ -61,9 +61,9 @@ class PackageSystem:
             pkgbase.build_status = 'SUCCESS'
             new_pkgs = list()
             for pkg in packages:
-                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
+                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.zst")))
             if len(old_pkgs) == 0 and len(new_pkgs) == 0:
-                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
+                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.zst"))
             else:
                 pkg_paths = list(set(new_pkgs) - set(old_pkgs))
             if len(pkg_paths) == 0:

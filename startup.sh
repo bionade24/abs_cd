@@ -4,7 +4,7 @@ if [ ! -f /repo/abs_cd-local.db.tar.zst ]; then
     repo-add -n /repo/abs_cd-local.db.tar.zst;
 else
     # Remove old versions of packages
-    repo-add -q -R /repo/abs_cd-local.db.tar.zst /repo/*.pkg.tar.*
+    repo-add -q -R /repo/abs_cd-local.db.tar.zst /repo/*.pkg.tar.zst
 fi
 
 python manage.py makemigrations

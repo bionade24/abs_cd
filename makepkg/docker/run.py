@@ -23,7 +23,7 @@ class MakepkgContainer:
     Class implementing a package builder for Arch Linux using Docker.
     This is the file running inside the container.
     """
-    __restDefaults = "--nosign --force --syncdeps --noconfirm"
+    __restDefaults = "--force --syncdeps --noconfirm"
 
     def __init__(self):
         self.parser = None
