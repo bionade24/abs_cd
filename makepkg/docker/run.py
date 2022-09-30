@@ -155,7 +155,7 @@ class MakepkgContainer:
             if errs:
                 eprint(errs)
 
-        built_packages = glob.glob("/build/*.pkg.tar.*")
+        built_packages = glob.glob("/build/.out/*")
         if not built_packages:
             eprint("No packages were built!")
             sys.exit(2)
