@@ -1,5 +1,6 @@
 FROM docker.io/archlinux/archlinux:latest
 LABEL org.abs-cd.tools=makepkg
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
 
