@@ -11,6 +11,7 @@ from .docker_conn import Connection
 
 
 REPO_ADD_BIN = '/usr/bin/repo-add'
+BUILDCONT_IMG = 'abs_cd/makepkg'
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +20,7 @@ class PackageSystem:
     def __init__(self):
         try:
             one_week_ago = timezone.now() - timedelta(days=7)
-            image = Connection().images.get('abs-cd/makepkg')
+            image = Connection().images.get(BUILDCONT_IMG)
             if datetime.utcfromtimestamp(image.history()[0]['Created']) < one_week_ago:
                 self._generate_image()
         except docker.errors.ImageNotFound:
@@ -29,9 +30,9 @@ class PackageSystem:
 
     @staticmethod
     def _generate_image():
-        logger.info("Generating new image abs-cd/makepkg, please wait")
+        logger.info(f"Generating new image of {BUILDCONT_IMG}, please wait")
         _, logs = Connection().images.build(
-            tag='abs-cd/makepkg', path=os.path.join(settings.ABS_CD_PROJECT_DIR, 'makepkg/docker'), rm=True, pull=True)
+            tag=BUILDCONT_IMG, path=os.path.join(settings.ABS_CD_PROJECT_DIR, 'makepkg/docker'), rm=True, pull=True)
         kw = 'stream'
         logger.info("".join(map(lambda lobj: lobj[kw] if kw in lobj else '', logs)))
 
