@@ -10,160 +10,92 @@ import shutil
 import shlex
 import sys
 
+USERNAME = 'builder'
+USERDIR = '/builder'
 
-def eprint(*args, **kwargs):
+
+def chown_recursive(uid, gid, path):
     """
-    Helper function for printing to sys.stderr
+    Change all owner UIDs and GIDs of the files in the path to the given ones
+    to not change either gid or uid, set that value to -1.
+    From https://stackoverflow.com/questions/2853723
+    Written by user "too much php"
     """
-    print(*args, file=sys.stderr, **kwargs)
+    os.chown(path, uid, gid)
+    for root, dirs, files in os.walk(path):
+        for momo in dirs:
+            try:
+                os.chown(os.path.join(root, momo), uid, gid)
+            except Exception as e:
+                print(e, file=sys.stderr)
+        for file in files:
+            try:
+                os.chown(os.path.join(root, file), uid, gid)
+            except Exception as e:
+                print(e, file=sys.stderr)
 
 
-class MakepkgContainer:
+def main():
     """
-    Class implementing a package builder for Arch Linux using Docker.
-    This is the file running inside the container.
+    Main function for running this python script. Implements the argument parser, logic
+    to build a complete package and copying of the build packages to the shared directory.
     """
-    _makepkg_default_flags = ['--force', '--syncdeps', '--noconfirm']
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-e',
+        '--execute',
+        nargs='?',
+        help="CMD to run the command after the source directory was copied")
+    parser.add_argument(
+        '-s',
+        '--sysupgrade',
+        action='store_true',
+        help="Run pacman -Syu before building")
 
-    def __init__(self):
-        self.parser = None
-        self.extra_flags = None
-        self.command = None
-        self.group = None
-        self.run_pacman_syu = None
-        self.user = None
+    parser_args, makepkg_extra_flags = parser.parse_known_args()
 
-    @staticmethod
-    def copy_tree(src, dst, symlinks=False, ignore=None):
-        """
-        Copy the directory tree from src to dst
-        From https://stackoverflow.com/questions/1868714
-        Written by user atzz
-        """
-        for item in os.listdir(src):
-            source_directory = os.path.join(src, item)
-            destination_directory = os.path.join(dst, item)
-            if os.path.isdir(source_directory):
-                shutil.copytree(source_directory,
-                                destination_directory, symlinks, ignore)
-            else:
-                shutil.copy2(source_directory, destination_directory)
+    if not os.path.isfile("/src/PKGBUILD") or os.path.islink("/src/PKGBUILD"):
+        print("No PKGBUILD file found! Aborting.", file=sys.stderr)
+        sys.exit(1)
 
-    @staticmethod
-    def change_user_or_gid(uid, gid, path):
-        """
-        Change all owner UIDs and GIDs of the files in the path to the given ones
-        to not change either gid or uid, set that value to -1.
-        From https://stackoverflow.com/questions/2853723
-        Written by user "too much php"
-        """
-        os.chown(path, uid, gid)
-        for root, dirs, files in os.walk(path):
-            for momo in dirs:
-                try:
-                    os.chown(os.path.join(root, momo), uid, gid)
-                except Exception as e:
-                    eprint(e)
-            for file in files:
-                try:
-                    os.chown(os.path.join(root, file), uid, gid)
-                except Exception as e:
-                    eprint(e)
-
-    # From https://www.tutorialspoint.com/How-to-change-the-permission-of-a-directory-using-Python
-    # Written by Rajendra Dharmkar
-    @staticmethod
-    def change_permissions_recursively(path, mode):
-        """
-        Change the permissions of all files and directories in the given path to the given mode
-        """
-        os.chmod(path, mode)
-        for root, dirs, files in os.walk(path, topdown=False):
-            for directory in [os.path.join(root, d) for d in dirs]:
-                os.chmod(directory, mode)
-            for file in [os.path.join(root, f) for f in files]:
-                os.chmod(file, mode)
-
-    @staticmethod
-    def append_to_file(path, content):
-        """
-        Append the given content to the file found in the given path
-        """
-        with open(path, "a+") as file:
-            file.seek(0, 2)
-            file.write(content)
-
-    def main(self):
-        """
-        Main function for running this python script. Implements the argument parser, logic
-        to build a complete package and copying of the build packages to the shared directory.
-        """
-        self.parser = argparse.ArgumentParser()
-        self.parser.add_argument(
-            '-e',
-            nargs='?',
-            help="CMD to run the command after the source directory was copied")
-        self.parser.add_argument(
-            '-p',
-            action='store_true',
-            help="Run a pacman -Syu before building")
-
-        namespace, self.extra_flags = self.parser.parse_known_args()
-
-        if not os.path.isfile("/src/PKGBUILD") or os.path.islink("/src/PKGBUILD"):
-            eprint("No PKGBUILD file found! Aborting.")
-            sys.exit(1)
-
-        self.command = namespace.e
-        self.run_pacman_syu = namespace.p
-        build_user_uid = pwd.getpwnam("mkpkg").pw_uid
-        build_user_gid = pwd.getpwnam("mkpkg").pw_gid
-        self.copy_tree("/src/", "/build")
-        self.change_user_or_gid(build_user_uid, build_user_gid, "/build")
-
-        if self.run_pacman_syu:
-            arguments = "pacman --noconfirm -Syu".split()
-            pacman_process = subprocess.Popen(arguments)
-            pacman_process.wait()
+    src_folder = "/src"
+    for entry in os.listdir(src_folder):
+        srcpath = os.path.join(src_folder, entry)
+        destpath = os.path.join(USERDIR, entry)
+        if os.path.isdir(srcpath):
+            shutil.copytree(srcpath, destpath, dirs_exist_ok=True)
         else:
-            arguments = "pacman --noconfirm -Sy".split()
-            pacman_process = subprocess.Popen(arguments)
-            pacman_process.wait()
+            shutil.copy2(srcpath, destpath)
 
-        flags = self._makepkg_default_flags + self.extra_flags
+    userdata = pwd.getpwnam(USERNAME)
+    chown_recursive(userdata.pw_uid, userdata.pw_gid, USERDIR)
 
-        # if a command is specified in -e, then run it
-        if self.command:
-            args = shlex.split(self.command)
-            subprocess.run(args)
+    pacman_args = ['pacman', '--noconfirm', '-Sy']
+    if parser_args.sysupgrade:
+        pacman_args.append('-u')
+    pacman_proc = subprocess.run(pacman_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if pacman_proc.returncode != 0:
+        print(pacman_proc.stdout.decode('UTF-8'), file=sys.stderr)
 
-        arguments = ['su', '-c',
-                     'makepkg {}'.format(" ".join(flags)),
-                     '-s',
-                     '/bin/bash',
-                     '-l', 'mkpkg']
-        makepkg_process = subprocess.Popen(arguments)
-        while makepkg_process.poll() is None:
-            outs, errs = makepkg_process.communicate(input="")
-            if outs:
-                print(outs)
-            if errs:
-                eprint(errs)
+    # if a command is specified in -e, then run it
+    if parser_args.execute:
+        subprocess.run(shlex.split(parser_args.execute))
 
-        built_packages = glob.glob("/build/*.pkg.tar.*")
-        if not built_packages:
-            eprint("No packages were built!")
-            sys.exit(2)
-        else:
-            # copy any packages
-            # use globbing to get all packages
-            for item in built_packages:
-                try:
-                    shutil.copy(item, "/repo")
-                except Exception as e:
-                    eprint(e)
-        sys.exit(0)
+    # If subprocess.Popen(user=uid) is used, gpg auto-key-retrieve doesn't work
+    makepkg_args = ['su', '-c', "makepkg --force --syncdeps --noconfirm " +
+                    " ".join(makepkg_extra_flags), USERNAME]
+    if subprocess.Popen(makepkg_args).wait() != 0:
+        sys.exit(2)
+
+    built_packages = glob.iglob(os.path.join(USERDIR, "*.pkg.tar.*"))
+    if not built_packages:
+        print("No packages were built!", file=sys.stderr)
+        sys.exit(2)
+    else:
+        for file in built_packages:
+            shutil.copy(file, "/repo")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
-    MakepkgContainer().main()
+    main()

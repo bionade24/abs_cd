@@ -1,2 +1,2 @@
 root ALL=(ALL) ALL
-mkpkg ALL=(ALL) NOPASSWD: ALL
+builder ALL=(ALL) NOPASSWD: ALL

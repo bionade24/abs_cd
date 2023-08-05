@@ -4,15 +4,15 @@ RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key 
 RUN systemd-machine-id-setup
 
 RUN pacman --noconfirm -Syuq --needed base-devel devtools python
-RUN useradd -m -d /build -s /bin/bash mkpkg
-USER mkpkg
-RUN mkdir /build/.gnupg
-COPY gpg.conf /build/.gnupg/gpg.conf
+RUN useradd -m -d /builder -s /bin/bash builder
+USER builder
+RUN mkdir /builder/.gnupg
+COPY gpg.conf /builder/.gnupg/gpg.conf
 USER root
 COPY sudoers /etc/sudoers
 COPY pacman.conf /etc/pacman.conf
 COPY makepkg.conf /etc/makepkg.conf
-WORKDIR /build
+WORKDIR /builder
 VOLUME "/src"
 VOLUME "/repo"
 COPY run.py /run.py
