@@ -6,7 +6,7 @@ RUN systemd-machine-id-setup
 RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython python-wheel cronie syslog-ng
 RUN rm /etc/cron.d/0hourly #Disable anacron
 COPY requirements.txt /root
-RUN python3 -m pip install -r /root/requirements.txt
+RUN python3 -m pip install --break-system-packages -r /root/requirements.txt
 #Cronie can only log to syslog, so add a Docker fake tty as a log destination
 RUN sed -i 's!{ file("/var/log/crond.log"); }!{ file("/var/log/crond.log"); file("/proc/1/fd/1"); }!g' /etc/syslog-ng/syslog-ng.conf
 COPY abs_cd/ /opt/abs_cd/abs_cd/
