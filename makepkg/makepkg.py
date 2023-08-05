@@ -36,7 +36,7 @@ class PackageSystem:
         logger.info("".join(map(lambda lobj: lobj[kw] if kw in lobj else '', logs)))
 
     # pkgbase should be type cd_manager.models.Package()
-    def build(self, pkgbase):
+    def build(self, pkgbase, makepkg_args=""):
         packages = ALPMHelper.get_srcinfo(pkgbase.name).getcontent()['pkgname']
         container_output = None
         pkgbase.build_status = 'BUILDING'
@@ -50,8 +50,8 @@ class PackageSystem:
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
             container_output = \
-                Connection().containers.run(image='abs-cd/makepkg', remove=False,
-                                            mem_limit='8G', memswap_limit='8G', cpu_shares=128,
+                Connection().containers.run(image=BUILDCONT_IMG, command=(makepkg_args),
+                                            remove=False, mem_limit='8G', memswap_limit='8G', cpu_shares=128,
                                             volumes={os.path.join(settings.PKGBUILDREPOS_HOST_PATH, pkgbase.name):
                                                      {'bind': '/src', 'mode': 'ro'},
                                                      'abs_cd_local-repo':

@@ -23,11 +23,11 @@ class MakepkgContainer:
     Class implementing a package builder for Arch Linux using Docker.
     This is the file running inside the container.
     """
-    __restDefaults = "--nosign --force --syncdeps --noconfirm"
+    _makepkg_default_flags = ['--force', '--syncdeps', '--noconfirm']
 
     def __init__(self):
         self.parser = None
-        self.rest = None
+        self.extra_flags = None
         self.command = None
         self.group = None
         self.run_pacman_syu = None
@@ -98,7 +98,7 @@ class MakepkgContainer:
         Main function for running this python script. Implements the argument parser, logic
         to build a complete package and copying of the build packages to the shared directory.
         """
-        self.parser = argparse.ArgumentParser(prog="dmakepkgContainer")
+        self.parser = argparse.ArgumentParser()
         self.parser.add_argument(
             '-e',
             nargs='?',
@@ -108,7 +108,7 @@ class MakepkgContainer:
             action='store_true',
             help="Run a pacman -Syu before building")
 
-        namespace, self.rest = self.parser.parse_known_args()
+        namespace, self.extra_flags = self.parser.parse_known_args()
 
         if not os.path.isfile("/src/PKGBUILD") or os.path.islink("/src/PKGBUILD"):
             eprint("No PKGBUILD file found! Aborting.")
@@ -129,13 +129,8 @@ class MakepkgContainer:
             arguments = "pacman --noconfirm -Sy".split()
             pacman_process = subprocess.Popen(arguments)
             pacman_process.wait()
-        flags = None
 
-        if not self.rest:
-            flags = self.__restDefaults.split()
-        else:
-            # translate list object to space seperated arguments
-            flags = self.rest
+        flags = self._makepkg_default_flags + self.extra_flags
 
         # if a command is specified in -e, then run it
         if self.command:

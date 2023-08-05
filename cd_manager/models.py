@@ -26,6 +26,7 @@ class Package(models.Model):
         'BuildStatus', 'SUCCESS FAILURE NOT_BUILT BUILDING')
     name = models.CharField(max_length=100, primary_key=True)
     repo_url = models.CharField(max_length=100)
+    makepkg_extra_args = models.CharField(max_length=255, blank=True)
     build_status = models.CharField(choices=BuildStatus.choices,
                                     default='NOT_BUILT', max_length=10)
     build_date = models.DateTimeField(null=True, blank=True)
@@ -70,7 +71,7 @@ class Package(models.Model):
 
     def run_cd(self):
         self.pkgbuild_repo_status_check()
-        PackageSystem().build(self)
+        PackageSystem().build(self, self.makepkg_extra_args)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
         else:
