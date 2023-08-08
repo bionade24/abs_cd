@@ -84,7 +84,7 @@ def main():
     # If subprocess.Popen(user=uid) is used, gpg auto-key-retrieve doesn't work
     makepkg_args = ['su', '-c', "makepkg --force --syncdeps --noconfirm " +
                     " ".join(makepkg_extra_flags), USERNAME]
-    if subprocess.Popen(makepkg_args).wait() != 0:
+    if subprocess.run(makepkg_args).returncode != 0:
         sys.exit(2)
 
     built_packages = glob.iglob(os.path.join(USERDIR, "*.pkg.tar.*"))
