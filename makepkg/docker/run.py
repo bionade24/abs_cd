@@ -7,7 +7,6 @@ import os.path
 import pwd
 import subprocess
 import shutil
-import shlex
 import sys
 
 USERNAME = 'builder'
@@ -44,7 +43,8 @@ def main():
     parser.add_argument(
         '--execute',
         nargs='?',
-        help="CMD to run the command after the source directory was copied")
+        metavar='CMD',
+        help=f"run CMD as {USERNAME} after the source directory was copied")
     parser.add_argument(
         '--sysupgrade',
         action='store_true',
@@ -77,7 +77,9 @@ def main():
 
     # if a command is specified with --execute, then run it
     if parser_args.execute:
-        subprocess.run(shlex.split(parser_args.execute))
+        if subprocess.run(['su', '-c', parser_args.execute, USERNAME]).returncode != 0:
+            print(f"Custom command \"{parser_args.execute}\" failed. Aborting.", file=sys.stderr)
+            sys.exit(1)
 
     # If subprocess.Popen(user=uid) is used, gpg auto-key-retrieve doesn't work
     makepkg_args = ['su', '-c', "makepkg --force --syncdeps --noconfirm " +
