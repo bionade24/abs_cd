@@ -42,12 +42,10 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-e',
         '--execute',
         nargs='?',
         help="CMD to run the command after the source directory was copied")
     parser.add_argument(
-        '-s',
         '--sysupgrade',
         action='store_true',
         help="Run pacman -Syu before building")
@@ -77,7 +75,7 @@ def main():
     if pacman_proc.returncode != 0:
         print(pacman_proc.stdout.decode('UTF-8'), file=sys.stderr)
 
-    # if a command is specified in -e, then run it
+    # if a command is specified with --execute, then run it
     if parser_args.execute:
         subprocess.run(shlex.split(parser_args.execute))
 
