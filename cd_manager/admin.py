@@ -23,9 +23,9 @@ class PackageAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             url(
-                r'^(?P<package_name>.+)/run_cd/$',
-                self.admin_site.admin_view(self.run_cd),
-                name='run_cd',
+                r'^(?P<package_name>.+)/build/$',
+                self.admin_site.admin_view(self.build),
+                name='build',
             ),
             url(
                 r'^(?P<package_name>.+)/rebuildtree/$',
@@ -39,13 +39,13 @@ class PackageAdmin(admin.ModelAdmin):
         return format_html(
             '<a class="button" href="{}">Build Package</a>&nbsp;'
             '<a class="button" href="{}">Rebuild Dep Tree</a>',
-            reverse('admin:run_cd', args=[obj.pk]),
+            reverse('admin:build', args=[obj.pk]),
             reverse('admin:rebuildtree', args=[obj.pk]),
         )
     package_actions.short_description = 'Package Actions'
     package_actions.allow_tags = True
 
-    def run_cd(self, request, package_name, *args, **kwargs):
+    def build(self, request, package_name, *args, **kwargs):
         request.current_app = self.admin_site.name
         pkg = Package.objects.get(name=package_name)
         Process(target=pkg.build).start()
