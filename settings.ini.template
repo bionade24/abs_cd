@@ -3,3 +3,4 @@ SECRET_KEY =
 DEBUG = False
 DOCKER_SOCKET = unix://var/run/docker.sock
 PKGBUILDREPOS_HOST_PATH = /var/local/abs_cd/packages
+PACMANREPO_HOST_PATH = Docker-volume
