@@ -7,7 +7,6 @@ else
     repo-add -q -R /repo/abs_cd-local.db.tar.zst /repo/*.pkg.tar.*
 fi
 
-python manage.py makemigrations
 python manage.py migrate
 python manage.py crontab add
 
