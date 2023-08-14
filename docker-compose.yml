@@ -15,5 +15,6 @@ services:
       - '/srv/abs_cd/staticfiles:/opt/abs_cd/staticfiles'
       - 'local-repo:/repo'
       - '/var/local/abs_cd/packages:/var/packages'
+      - '/var/local/abs_cd/.gnupg:/root/.gnupg'
 volumes:
   local-repo:

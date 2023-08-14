@@ -2,6 +2,7 @@ import logging
 from pyalpm import vercmp
 from cd_manager.models import Package
 from cd_manager.alpm import ALPMHelper, PackageNotFoundError
+from django.conf import settings
 
 
 logger = logging.getLogger(__name__)

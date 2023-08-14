@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
 from cd_manager.alpm import ALPMHelper
+from cd_manager import models
 from .docker_conn import Connection
 
 
@@ -44,7 +45,7 @@ class PackageSystem:
         logger.info("".join(map(lambda lobj: lobj[kw] if kw in lobj else '', logs)))
 
     # pkgbase should be type cd_manager.models.Package()
-    def build(self, pkgbase, makepkg_args=""):
+    def build(self, pkgbase, user, makepkg_args=""):
         packages = ALPMHelper.get_srcinfo(pkgbase.name).getcontent()['pkgname']
         container_output = None
         pkgbase.build_status = 'BUILDING'
@@ -69,15 +70,29 @@ class PackageSystem:
                                                      },
                                             name=container_name)
             pkgbase.build_status = 'SUCCESS'
+            # TODO: Replace dumb comparison with built_pkgs from container output
             new_pkgs = list()
             for pkg in packages:
-                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
+                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.zst")))
             if len(old_pkgs) == 0 and len(new_pkgs) == 0:
-                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.*"))
+                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.zst"))
             else:
                 pkg_paths = list(set(new_pkgs) - set(old_pkgs))
             if len(pkg_paths) == 0:
                 pkg_paths = new_pkgs
+
+                keys = models.GpgKey.objects.filter(owner=user).order_by('allow_sign_by_other_users')
+                if keys.len() > 0:
+                    key = keys[0]  # TODO: Better selection strategy?
+                else:
+                    keys = models.GpgKey.objects.filter(allow_sign_by_other_users=True)
+                    key = keys[0] if key.len() > 0 else None
+            if key:
+                try:
+                    for pkg_path in pkg_paths:
+                        key.sign(pkg_path)
+                except gpg.errors.GpgError:
+                    logger.exception("Error while signing packages:")
             try:
                 repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
                                                  + pkg_paths, check=True, stderr=subprocess.PIPE,
@@ -85,6 +100,11 @@ class PackageSystem:
                                                  .stderr.decode('UTF-8').strip('\n')
                 if repo_add_output:
                     logger.warning(repo_add_output)
+                if key:
+                    try:
+                        key.sign(os.path.join(settings.PACMANREPO_PATH, 'abs_cd-local.db.tar.zst'))
+                    except gpg.errors.GpgError:
+                        logger.exception("Error while signing repo database:")
             except subprocess.CalledProcessError as e:
                 logger.error(e.stdout)
         except docker.errors.ContainerError as e:
