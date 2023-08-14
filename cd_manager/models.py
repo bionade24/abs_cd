@@ -3,15 +3,17 @@ import shutil
 import logging
 import glob
 import subprocess
+import gpg
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User, AnonymousUser
 from cd_manager.alpm import ALPMHelper
 from cd_manager.recursion_helper import Recursionlimit
-from makepkg.makepkg import PackageSystem
-from datetime import timedelta
+from makepkg import makepkg
+from datetime import timedelta, datetime
 from git import Repo
 from git.exc import GitCommandError
 
@@ -69,17 +71,16 @@ class Package(models.Model):
                 return redownload()
         return False
 
-    def run_cd(self):
+    def run_cd(self, user: User):
         self.pkgbuild_repo_status_check()
-        PackageSystem().build(self, self.makepkg_extra_args)
+        makepkg.PackageSystem().build(self, user, self.makepkg_extra_args)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
-        else:
-            if not self.aur_push and self.aur_push_output:
-                self.aur_push_output = None
-                self.save()
+        elif not self.aur_push and self.aur_push_output:
+            self.aur_push_output = None
+            self.save()
 
-    def build(self, force_rebuild=False, built_packages=[], repo_status_check=True):
+    def build(self, user: User = AnonymousUser, force_rebuild=False, built_packages=[], repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
         # recursion limit)
@@ -117,7 +118,7 @@ class Package(models.Model):
                 else:
                     logger.info(
                         f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
-        self.run_cd()
+        self.run_cd(user)
         return built_packages
 
     def rebuildtree(self, built_packages=[]):
@@ -161,7 +162,7 @@ def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
             logger.debug(f"Trying to remove {pkg} from local repo database")
             repo_add_output = subprocess.run([REPO_REMOVE_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst', pkg],
                                              stderr=subprocess.PIPE, cwd=settings.PACMANREPO_PATH) \
-                                             .stderr.decode('UTF-8').strip('\n')
+                                        .stderr.decode('UTF-8').strip('\n')
             if repo_add_output:
                 logger.warning(repo_add_output)
         except subprocess.CalledProcessError as e:
@@ -170,3 +171,67 @@ def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
             for file in glob.iglob(f"/repo/{pkg}-{pkg_version}-*.pkg.tar.*"):
                 logger.debug(f"Deleting {file}")
                 os.remove(file)
+
+
+class GpgKey(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    fingerprint = models.CharField(max_length=255, editable=False, unique=True)
+    expiry_date = models.DateTimeField(null=True, blank=True, editable=False)
+    label = models.CharField(max_length=255, unique=True)
+    allow_sign_by_other_users = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.fingerprint
+
+    @property
+    def key(self):
+        return "Try harder ;)"
+
+    @key.setter
+    def key(self, value):
+        logger.debug("Attempting to import new GPG key.")
+        ctx = gpg.Context(pinentry_mode=gpg.constants.PINENTRY_MODE_ERROR)
+        result = ctx.key_import(value.encode('ASCII'))
+        if result is not None and hasattr(result, "considered"):
+            if not hasattr(result, "secret_imported") and len(result.imports) > 1:
+                raise RuntimeError("Only one key per object is allowed.")
+            logger.debug(f"Added GPG key {self.fingerprint} to keyring.")
+            self.fingerprint = result.imports[0].fpr
+            for sk in ctx.get_key(self.fingerprint).subkeys:
+                if sk.can_sign:
+                    if sk.expires == 0:
+                        break
+                    else:
+                        sk_exp_date = datetime.utcfromtimestamp(sk.expires)
+                        if not self.expiry_date or sk_exp_date > self.expiry_date:
+                            self.expiry_date = sk_exp_date
+            self.save()
+        elif result is not None:
+            raise RuntimeError("Importing GPG key failed: " + result)
+        else:
+            raise RuntimeError("Importing GPG key went horribly wrong, no result returned.")
+
+    def sign(self, filepath):
+        with open(filepath, 'rb') as file:
+            content = file.read()
+        with gpg.Context(pinentry_mode=gpg.constants.PINENTRY_MODE_ERROR) as ctx:
+            key = ctx.get_key(self.fingerprint)
+            ctx.signers = (key,)
+            try:
+                signature, result = ctx.sign(content, mode=gpg.constants.sig.mode.DETACH)
+            except gpg.errors.GPGMEError as e:
+                logger.exception(f"Signing {filepath} with {self.fingerprint} failed:")
+                return
+            logger.debug(f"GPG sign of {filepath}: {result}")
+        with open(filepath + '.sig', 'wb') as sigfile:
+            sigfile.write(signature)
+
+
+@receiver(pre_delete, sender=GpgKey)
+def delete_key(sender, instance, using, **kwargs):
+    if instance.fingerprint == "":
+        return
+    logger.debug(f"Attempting to delete GPG key {instance.fingerprint} from keyring.")
+    with gpg.Context(pinentry_mode=gpg.constants.PINENTRY_MODE_ERROR) as ctx:
+        key = ctx.get_key(instance.fingerprint)
+        ctx.op_delete_ext(key, gpg.constants.DELETE_FORCE | gpg.constants.DELETE_ALLOW_SECRET)
