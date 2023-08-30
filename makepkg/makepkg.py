@@ -33,8 +33,6 @@ class PackageSystem:
                 self._generate_image()
         except docker.errors.ImageNotFound:
             self._generate_image()
-        self._repo = Connection().volumes.get(
-            "abs_cd_local-repo")
 
     @staticmethod
     def _generate_image():
