@@ -94,7 +94,7 @@ class PackageSystem:
                 except gpg.errors.GpgError:
                     logger.exception("Error while signing packages:")
             try:
-                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', 'abs_cd-local.db.tar.zst']
+                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', settings.PACMANREPO_NAME]
                                                  + pkg_paths, check=True, stderr=subprocess.PIPE,
                                                  cwd=settings.PACMANREPO_PATH) \
                                                  .stderr.decode('UTF-8').strip('\n')
@@ -102,7 +102,7 @@ class PackageSystem:
                     logger.warning(repo_add_output)
                 if key:
                     try:
-                        key.sign(os.path.join(settings.PACMANREPO_PATH, 'abs_cd-local.db.tar.zst'))
+                        key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANREPO_NAME))
                     except gpg.errors.GpgError:
                         logger.exception("Error while signing repo database:")
             except subprocess.CalledProcessError as e:
