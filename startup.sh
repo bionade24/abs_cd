@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-if [ ! -f /repo/abs_cd-local.db.tar.zst ]; then
-    repo-add -q /repo/abs_cd-local.db.tar.zst
-fi
-
 python manage.py migrate
 python manage.py crontab add
 

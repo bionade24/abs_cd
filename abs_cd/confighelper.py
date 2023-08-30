@@ -19,7 +19,7 @@ class Confighelper:
         self.settings = configparser.ConfigParser(interpolation=None)
         self.settings.read(self.setting_path)
 
-    def get_setting(self, name, default=None):
+    def get_setting(self, name: str, default=None) -> str:
         try:
             val = self.settings['DJANGO'][name]
         except KeyError:
@@ -30,7 +30,7 @@ class Confighelper:
             self.write_setting(name, val)
         return val
 
-    def write_setting(self, name, value):
+    def write_setting(self, name: str, value) -> None:
         with open(self.setting_path, 'w') as settingsfile:
             self.settings['DJANGO'][name] = value
             self.settings.write(settingsfile, space_around_delimiters=True)
