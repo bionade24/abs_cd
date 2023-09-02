@@ -113,7 +113,7 @@ class Package(models.Model):
                 if dep_pkgobj.build_status != 'SUCCESS' or \
                    dep_pkgobj.build_date < one_week_ago or \
                    force_rebuild:
-                    built_packages = dep_pkgobj.build(force_rebuild=force_rebuild, built_packages=built_packages,
+                    built_packages = dep_pkgobj.build(user, force_rebuild=force_rebuild, built_packages=built_packages,
                                                       repo_status_check=False)
                 else:
                     logger.info(
