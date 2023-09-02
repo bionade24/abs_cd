@@ -79,12 +79,7 @@ class PackageSystem:
             if len(pkg_paths) == 0:
                 pkg_paths = new_pkgs
 
-            keys = models.GpgKey.objects.filter(owner=user).order_by('allow_sign_by_other_users')
-            if len(keys) > 0:
-                key = keys[0]  # TODO: Better selection strategy?
-            else:
-                keys = models.GpgKey.objects.filter(allow_sign_by_other_users=True)
-                key = keys[0] if len(keys) > 0 else None
+            key = models.GpgKey.get_most_appropriate_key(user)
             if key:
                 try:
                     for pkg_path in pkg_paths:

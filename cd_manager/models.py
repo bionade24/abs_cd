@@ -226,6 +226,15 @@ class GpgKey(models.Model):
         with open(filepath + '.sig', 'wb') as sigfile:
             sigfile.write(signature)
 
+    @staticmethod
+    def get_most_appropriate_key(user: User):
+        if not user == AnonymousUser:
+            keys = GpgKey.objects.filter(owner=user).order_by('allow_sign_by_other_users')
+            if len(keys) > 0:
+                return keys[0]
+        keys = GpgKey.objects.filter(allow_sign_by_other_users=True)
+        return keys[0] if len(keys) > 0 else None
+
 
 @receiver(pre_delete, sender=GpgKey)
 def delete_key(sender, instance, using, **kwargs):
