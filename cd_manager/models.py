@@ -25,7 +25,7 @@ REPO_REMOVE_BIN = "/usr/bin/repo-remove"
 
 class Package(models.Model):
     BuildStatus = models.TextChoices(
-        'BuildStatus', 'SUCCESS FAILURE NOT_BUILT BUILDING')
+        'BuildStatus', 'SUCCESS FAILURE NOT_BUILT BUILDING PREPARING WAITING')
     name = models.CharField(max_length=100, primary_key=True)
     repo_url = models.CharField(max_length=100)
     makepkg_extra_args = models.CharField(max_length=255, blank=True)
@@ -79,6 +79,10 @@ class Package(models.Model):
             return built_packages
         built_packages.append(self.name)
 
+        self.build_status = 'PREPARING'
+        self.build_output = None
+        self.save()
+
         if repo_status_check:
             self.pkgbuild_repo_status_check()
         deps = ALPMHelper().get_deps(pkgname=self.name, rundeps=True, makedeps=True)
@@ -104,11 +108,18 @@ class Package(models.Model):
                 if dep_pkgobj.build_status != 'SUCCESS' or \
                    dep_pkgobj.build_date < one_week_ago or \
                    force_rebuild:
+                    if self.build_status != 'WAITING':
+                        self.build_status = 'WAITING'
+                        self.save()
                     built_packages = dep_pkgobj.build(user, force_rebuild=force_rebuild, built_packages=built_packages,
                                                       repo_status_check=False)
                 else:
                     logger.info(
                         f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
+
+        if self.build_status != 'PREPARING':
+            self.build_status = 'PREPARING'
+            self.save()
         makepkg.PackageSystem().build(self, user, self.makepkg_extra_args)
         if self.build_status == 'SUCCESS' and self.aur_push:
             self.push_to_aur()
