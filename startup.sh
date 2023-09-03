@@ -16,12 +16,12 @@ envsubst '$pacmanrepo_name' < makepkg/docker/pacman.conf.tmpl > makepkg/docker/p
 python manage.py migrate
 python manage.py crontab add
 
-echo "Starting syslog:"
-syslog-ng --no-caps
-echo "Starting crond:"
-crond -s
-
 if ! grep -r -i -q "debug = true" data/settings.ini; then
+    echo "Starting syslog:"
+    syslog-ng --no-caps
+    echo "Starting crond:"
+    crond -s
+    echo "Starting Django:"
     #Start with gunicorn
     python manage.py collectstatic --noinput
     gunicorn --bind :8000 --workers 3 abs_cd.wsgi:application
