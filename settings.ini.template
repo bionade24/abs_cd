@@ -1,7 +1,7 @@
 [DJANGO]
-SECRET_KEY =
-DEBUG = False
-DOCKER_SOCKET = unix://var/run/docker.sock
-PKGBUILDREPOS_HOST_PATH = /var/local/abs_cd/packages
-PACMANREPO_HOST_PATH = Docker-volume
-PACMANREPO_NAME = abs_cd-local
+secret_key =
+debug = False
+docker_socket = unix://var/run/docker.sock
+pkgbuildrepos_host_path = /var/local/abs_cd/packages
+pacmanrepo_host_path = Docker-volume
+pacmanrepo_name = abs_cd-local
