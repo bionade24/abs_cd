@@ -107,8 +107,8 @@ class PackageSystem:
                         key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANREPO_FILENAME))
                     except gpg.errors.GpgError:
                         logger.exception("Error while signing repo database:")
-            except subprocess.CalledProcessError as e:
-                logger.error(e.stdout)
+            except subprocess.CalledProcessError:
+                logger.exception("Updating the repo database failed:")
         except docker.errors.ContainerError as e:
             pkgbase.build_status = 'FAILURE'
             container_output = e.container.logs()
