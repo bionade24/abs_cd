@@ -71,15 +71,6 @@ class Package(models.Model):
                 return redownload()
         return False
 
-    def run_cd(self, user: User):
-        self.pkgbuild_repo_status_check()
-        makepkg.PackageSystem().build(self, user, self.makepkg_extra_args)
-        if self.build_status == 'SUCCESS' and self.aur_push:
-            self.push_to_aur()
-        elif not self.aur_push and self.aur_push_output:
-            self.aur_push_output = None
-            self.save()
-
     def build(self, user: User = AnonymousUser, force_rebuild=False, built_packages=[], repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
@@ -118,7 +109,12 @@ class Package(models.Model):
                 else:
                     logger.info(
                         f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
-        self.run_cd(user)
+        makepkg.PackageSystem().build(self, user, self.makepkg_extra_args)
+        if self.build_status == 'SUCCESS' and self.aur_push:
+            self.push_to_aur()
+        elif not self.aur_push and self.aur_push_output:
+            self.aur_push_output = None
+            self.save()
         return built_packages
 
     def rebuildtree(self, built_packages=[]):
