@@ -16,7 +16,7 @@ COPY static /opt/abs_cd/static/
 COPY templates /opt/abs_cd/templates/
 COPY manage.py /opt/abs_cd/
 COPY settings.ini.template /opt/abs_cd/settings.ini.template
-COPY pacman.conf /etc/pacman.conf
+COPY pacman.conf.tmpl /opt/abs_cd
 COPY config /root/.ssh
 COPY known_hosts /root/.ssh
 COPY startup.sh /opt/abs_cd

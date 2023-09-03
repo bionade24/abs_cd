@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+if [ ! -f data/settings.ini ]; then
+    cp settings.ini.template data/settings.ini
+    echo "settings.ini did not exist, copied from settings.ini.template"
+fi
+
+source <(grep pacmanrepo_name data/settings.ini | tr -d ' ')
+export pacmanrepo_name
+envsubst '$pacmanrepo_name' < pacman.conf.tmpl > /etc/pacman.conf
+envsubst '$pacmanrepo_name' < makepkg/docker/pacman.conf.tmpl > makepkg/docker/pacman.conf
+
 python manage.py migrate
 python manage.py crontab add
 
