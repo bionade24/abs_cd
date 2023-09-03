@@ -155,7 +155,7 @@ PKGBUILDREPOS_PATH = "/var/packages"
 PKGBUILDREPOS_HOST_PATH = helper.get_setting('PKGBUILDREPOS_HOST_PATH', '/var/local/abs_cd/packages')
 PACMANREPO_PATH = "/repo"
 PACMANREPO_HOST_PATH = helper.get_setting('PACMANREPO_HOST_PATH', 'Docker-volume')
-PACMANREPO_NAME = helper.get_setting('PACMANREPO_NAME', "abs_cd-local") + ".db.tar.zst"
+PACMANREPO_FILENAME = helper.get_setting('PACMANREPO_NAME', "abs_cd-local") + ".db.tar.zst"
 
 LOGGING = {
     'version': 1,
