@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_crontab',
     'sortable_listview',
-    'cd_manager.apps.InterfaceConfig']
+    'cd_manager.apps.CdManagerConfig']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
