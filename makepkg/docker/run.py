@@ -8,6 +8,7 @@ import pwd
 import subprocess
 import shutil
 import sys
+from subprocess import PIPE, STDOUT
 
 USERNAME = 'builder'
 USERDIR = '/builder'
@@ -71,7 +72,7 @@ def main():
     pacman_args = ['pacman', '--noconfirm', '-Sy']
     if parser_args.sysupgrade:
         pacman_args.append('-u')
-    pacman_proc = subprocess.run(pacman_args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    pacman_proc = subprocess.run(pacman_args, stdout=PIPE, stderr=STDOUT)
     if pacman_proc.returncode != 0:
         print(pacman_proc.stdout.decode('UTF-8'), file=sys.stderr)
 
