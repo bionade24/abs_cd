@@ -34,7 +34,7 @@
                     {% elif package.build_status == 'FAILURE' %}
                          "failure"
                     {% else %}
-                        "not_built"
+                        "other"
                     {% endif %}
                     >{{ package.build_status }}</span></td>
                     <td>{{ package.build_date|date:'d.n.Y H:i' }}</td>
