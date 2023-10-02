@@ -1,8 +1,10 @@
 import docker
-import os
 import glob
-import subprocess
+import gpg.errors
+import json
 import logging
+import os
+import subprocess
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
@@ -53,15 +55,13 @@ class PackageSystem:
 
     # pkgbase should be type cd_manager.models.Package()
     def build(self, pkgbase, user, makepkg_args=""):
-        packages = ALPMHelper.get_srcinfo(pkgbase.name).getcontent()['pkgname']
-        container_output = None
         pkgbase.build_status = 'BUILDING'
         pkgbase.build_output = None
         pkgbase.save()
+
+        container_output = b""
+        build_res = None
         try:
-            old_pkgs = list()
-            for pkg in packages:
-                old_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.*")))
             # Use microseconds as a fake UUID for container names to
             # prevent name conflicts
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
@@ -77,44 +77,54 @@ class PackageSystem:
                                                      },
                                             name=container_name)
             pkgbase.build_status = 'SUCCESS'
-            # TODO: Replace dumb comparison with built_pkgs from container output
-            new_pkgs = list()
-            for pkg in packages:
-                new_pkgs.extend(glob.glob(os.path.join(settings.PACMANREPO_PATH, f"{pkg}-[0-9]*-[0-9]*-*.pkg.tar.zst")))
-            if len(old_pkgs) == 0 and len(new_pkgs) == 0:
-                pkg_paths = glob.glob(os.path.join(settings.PACMANREPO_PATH, "*.pkg.tar.zst"))
-            else:
-                pkg_paths = list(set(new_pkgs) - set(old_pkgs))
-            if len(pkg_paths) == 0:
-                pkg_paths = new_pkgs
-
-            key = models.GpgKey.get_most_appropriate_key(user)
-            if key:
-                try:
-                    for pkg_path in pkg_paths:
-                        key.sign(pkg_path)
-                except gpg.errors.GpgError:
-                    logger.exception("Error while signing packages:")
             try:
-                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', settings.PACMANDB_FILENAME]
-                                                 + pkg_paths, check=True, stderr=subprocess.PIPE,
-                                                 cwd=settings.PACMANREPO_PATH) \
-                                                 .stderr.decode('UTF-8').strip('\n')
-                if repo_add_output:
-                    logger.warning(repo_add_output)
+                build_res = json.loads(container_output)
+                built_pkgs = build_res['built_pkgs']
+            except json.decoder.JSONDecodeError:
+                logger.exception("Reading build_res after successful build failed:")
+
+            if build_res and len(built_pkgs) > 0:
+                key = models.GpgKey.get_most_appropriate_key(user)
                 if key:
                     try:
-                        key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANDB_FILENAME))
+                        for pkg in built_pkgs:
+                            key.sign(os.path.join(settings.PACMANREPO_PATH, pkg))
                     except gpg.errors.GpgError:
-                        logger.exception("Error while signing repo database:")
-            except subprocess.CalledProcessError:
-                logger.exception("Updating the repo database failed:")
+                        logger.exception("Error while signing packages:")
+                try:
+                    repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', settings.PACMANDB_FILENAME]
+                                                     + built_pkgs, check=True, stderr=subprocess.PIPE,
+                                                     cwd=settings.PACMANREPO_PATH) \
+                                                     .stderr.decode('UTF-8').strip('\n')
+                    if repo_add_output:
+                        logger.warning(repo_add_output)
+                    if key:
+                        try:
+                            key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANDB_FILENAME))
+                        except gpg.errors.GpgError:
+                            logger.exception("Error while signing repo database :")
+                except subprocess.CalledProcjson.decoder.JSONDecodeErroressError:
+                    logger.exception("Updating the repo database failed:")
+            else:
+                pkgbase.build_status = 'FAILURE'
+
         except docker.errors.ContainerError as e:
             pkgbase.build_status = 'FAILURE'
             container_output = e.container.logs()
+            try:
+                build_res = json.loads(container_output)
+            except json.decoder.JSONDecodeError:
+                logger.exception("Reading build_res after failed build failed:")
+
         finally:
             Connection().containers.get(container_name).remove()
-            if container_output:
-                pkgbase.build_output = container_output.decode('utf-8')
+            container_output = container_output.decode('utf-8')
+            logger.debug("Raw container output:\n" + container_output)
+
+            if build_res:
+                pkgbase.build_output = build_res['build_log']
+            elif settings.DEBUG:
+                pkgbase.build_output = container_output
+
         pkgbase.build_date = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
         pkgbase.save()
