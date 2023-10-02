@@ -26,9 +26,9 @@ def get_pacmanrepo_host_path():
 class PackageSystem:
 
     def __init__(self):
-        if settings.PACMANREPO_FILENAME not in os.listdir(settings.PACMANREPO_PATH):
+        if settings.PACMANDB_FILENAME not in os.listdir(settings.PACMANREPO_PATH):
             # 1st run or repo name changed
-            proc = subprocess.run([REPO_ADD_BIN, '-q', settings.PACMANREPO_FILENAME],
+            proc = subprocess.run([REPO_ADD_BIN, '-q', settings.PACMANDB_FILENAME],
                                   stderr=subprocess.PIPE, cwd=settings.PACMANREPO_PATH)
             if proc.returncode != 0:
                 logger.error("Creating the pacman repo failed:\n" + proc.stderr)
@@ -96,7 +96,7 @@ class PackageSystem:
                 except gpg.errors.GpgError:
                     logger.exception("Error while signing packages:")
             try:
-                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', settings.PACMANREPO_FILENAME]
+                repo_add_output = subprocess.run([REPO_ADD_BIN, '-q', '-R', settings.PACMANDB_FILENAME]
                                                  + pkg_paths, check=True, stderr=subprocess.PIPE,
                                                  cwd=settings.PACMANREPO_PATH) \
                                                  .stderr.decode('UTF-8').strip('\n')
@@ -104,7 +104,7 @@ class PackageSystem:
                     logger.warning(repo_add_output)
                 if key:
                     try:
-                        key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANREPO_FILENAME))
+                        key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANDB_FILENAME))
                     except gpg.errors.GpgError:
                         logger.exception("Error while signing repo database:")
             except subprocess.CalledProcessError:
