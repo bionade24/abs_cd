@@ -1,5 +1,4 @@
 import docker
-import glob
 import gpg.errors
 import json
 import logging
@@ -8,7 +7,6 @@ import subprocess
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
-from cd_manager.alpm import ALPMHelper
 from cd_manager import models
 from .docker_conn import Connection
 
