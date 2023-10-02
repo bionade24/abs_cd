@@ -1,7 +1,5 @@
 from django.contrib import admin
-from django.contrib import auth
 from django.utils.html import format_html
-from django.utils.translation import gettext, gettext_lazy as _
 from django.urls import reverse
 from django.conf.urls import url
 from django.http.response import HttpResponseRedirect
