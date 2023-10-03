@@ -49,3 +49,11 @@ span {
 .console_output {
     padding: 1em;
 }
+
+.pagination {
+    text-align: center;
+}
+
+.current {
+    margin: 2em;
+}

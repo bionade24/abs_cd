@@ -30,6 +30,23 @@
     </tr>
   </tbody>
 </table>
+<div class="pagination">
+    <span class="step-links">
+        {% if prev_page %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ prev_page }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page }} of {{ page_count }}.
+        </span>
+
+        {% if next_page %}
+            <a href="?page={{ next_page }}">next</a>
+            <a href="?page={{ page_count }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 {% endblock content %}
 {% endautoescape %}
 
