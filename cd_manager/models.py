@@ -71,10 +71,12 @@ class Package(models.Model):
                 return redownload()
         return False
 
-    def build(self, user: User = AnonymousUser, force_rebuild=False, built_packages=[], repo_status_check=True):
+    def build(self, user: User = AnonymousUser, force_rebuild=False, built_packages=None, repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
         # recursion limit)
+        if not built_packages:
+            built_packages = []
         if self.name in built_packages:
             return built_packages
         built_packages.append(self.name)
