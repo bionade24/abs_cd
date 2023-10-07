@@ -1,5 +1,8 @@
 data/settings.ini
 data/db.sqlite3
 staticfiles/
-tests/
+tests/pkgbuild_local/*
+tests/testroot
+tests/pacman_db
+tests/pkgbuild_remote
 venv/

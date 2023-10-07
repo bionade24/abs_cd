@@ -153,6 +153,7 @@ STATIC_URL = '/static/'
 ABS_CD_PROJECT_DIR = "/opt/abs_cd"
 PKGBUILDREPOS_PATH = "/var/packages"
 PKGBUILDREPOS_HOST_PATH = helper.get_setting('PKGBUILDREPOS_HOST_PATH', '/var/local/abs_cd/packages')
+PACMAN_CONFIG_PATH = "/etc/pacman.conf"
 PACMANREPO_PATH = "/repo"
 PACMANREPO_HOST_PATH = helper.get_setting('PACMANREPO_HOST_PATH', 'Docker-volume')
 PACMANDB_FILENAME = helper.get_setting('PACMANREPO_NAME', "abs_cd-local") + ".db.tar.zst"

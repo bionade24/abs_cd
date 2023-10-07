@@ -24,7 +24,7 @@ class ALPMHelper:
     def __init__(self):
         if not ALPMHelper._alpm_handle:
             ALPMHelper._alpm_handle = PacmanConfig(
-                conf='/etc/pacman.conf').initialize_alpm()
+                conf=settings.PACMAN_CONFIG_PATH).initialize_alpm()
         if not ALPMHelper._syncdbs:
             ALPMHelper._syncdbs = ALPMHelper._alpm_handle.get_syncdbs()
 
@@ -55,6 +55,8 @@ class ALPMHelper:
     def get_deps(self, pkgname: str, rundeps=True, makedeps=False, checkdeps=False):
         deps = []
         try:
+            # Since some packages have provides fields with completely different names,
+            # we always have to check if a package may be built by the CD
             srcinfo = ALPMHelper.get_srcinfo(pkgname)
             if rundeps:
                 deps += srcinfo.getrundeps()
