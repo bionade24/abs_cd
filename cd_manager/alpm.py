@@ -1,3 +1,4 @@
+import logging
 import pyalpm
 import os
 from dataclasses import dataclass
@@ -7,6 +8,9 @@ from pycman.config import PacmanConfig
 from cd_manager.pkgbuild import SRCINFO
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,6 +62,7 @@ class ALPMHelper:
             # Since some packages have provides fields with completely different names,
             # we always have to check if a package may be built by the CD
             srcinfo = ALPMHelper.get_srcinfo(pkgname)
+            logger.debug(f"Parsed .SRCINFO of pkg {pkgname}.")
             if rundeps:
                 deps += srcinfo.getrundeps()
             if makedeps:
@@ -65,6 +70,7 @@ class ALPMHelper:
             if checkdeps:
                 deps += srcinfo.getcheckdeps()
         except PackageNotFoundError:
+            logger.debug(f"Trying to get pkg details of {pkgname} from local pacman databases.")
             pkg = self.get_pkg_from_syncdbs(pkgname=pkgname)
             if rundeps:
                 deps += pkg.depends
