@@ -98,7 +98,7 @@ def main():
     makepkg_proc = subprocess.run(makepkg_args, stdout=PIPE, stderr=STDOUT, encoding='UTF-8')
     log(makepkg_proc.stdout)
     if makepkg_proc.returncode != 0:
-        sys.exit(1)
+        print_and_exit(1)
 
     built_packages = glob.glob(os.path.join(USERDIR, "*.pkg.tar.*"))
     if not built_packages:
@@ -114,6 +114,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+    # Use Exception not BaseException to not catch SystemExit
     except Exception:
         log(traceback.format_exc())
         print_and_exit(2)
