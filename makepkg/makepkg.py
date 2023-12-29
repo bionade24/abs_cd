@@ -101,7 +101,7 @@ class PackageSystem:
                             key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANDB_FILENAME))
                         except gpg.errors.GpgError:
                             logger.exception("Error while signing repo database :")
-                except subprocess.CalledProcjson.decoder.JSONDecodeErroressError:
+                except subprocess.CalledProcessError:
                     logger.exception("Updating the repo database failed:")
             else:
                 pkgbase.build_status = 'FAILURE'
