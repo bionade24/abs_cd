@@ -7,7 +7,7 @@ RUN systemd-machine-id-setup
 RUN pacman --noconfirm -Syuq --needed base-devel devtools python
 RUN useradd -m -d /builder -s /bin/bash builder
 USER builder
-RUN gpg --list-keys
+RUN gpg --list-keys; rm -rf /builder/.gnupg/common.conf; gpg --list-keys
 COPY gpg.conf /builder/.gnupg/gpg.conf
 USER root
 COPY sudoers /etc/sudoers
