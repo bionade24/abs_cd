@@ -8,7 +8,7 @@ COPY requirements.txt /root
 RUN python3 -m pip install --break-system-packages -r /root/requirements.txt
 #Cronie can only log to syslog, so add a Docker fake tty as a log destination
 RUN sed -i 's!{ file("/var/log/crond.log"); }!{ file("/var/log/crond.log"); file("/proc/1/fd/1"); }!g' /etc/syslog-ng/syslog-ng.conf
-RUN gpg --list-keys
+RUN gpg --list-keys; rm -rf /builder/.gnupg/common.conf; gpg --list-keys
 COPY abs_cd/ /opt/abs_cd/abs_cd/
 COPY cd_manager/ /opt/abs_cd/cd_manager/
 COPY makepkg/ /opt/abs_cd/makepkg/
