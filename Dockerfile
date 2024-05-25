@@ -2,7 +2,7 @@ FROM docker.io/archlinux/archlinux:latest
 LABEL org.abs-cd=webcd_manager
 RUN pacman --noconfirm -Sy archlinux-keyring && pacman-key --init && pacman-key --populate archlinux
 RUN systemd-machine-id-setup
-RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython python-wheel python-gpgme cronie syslog-ng
+RUN pacman --noconfirm -Syuq --needed pyalpm openssh python-pip python-gitpython python-wheel python-gpgme cronie syslog-ng python-argon2-cffi-bindings
 RUN rm /etc/cron.d/0hourly #Disable anacron
 COPY requirements.txt /root
 RUN python3 -m pip install --break-system-packages -r /root/requirements.txt
