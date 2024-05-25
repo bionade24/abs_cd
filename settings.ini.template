@@ -1,6 +1,7 @@
 [DJANGO]
 secret_key =
 debug = False
+application_url = http://localhost
 docker_socket = unix://var/run/docker.sock
 pkgbuildrepos_host_path = /var/local/abs_cd/packages
 pacmanrepo_host_path = Docker-volume

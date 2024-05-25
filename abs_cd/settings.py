@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from .confighelper import Confighelper
 from django.core.management import utils
+from urllib.parse import urlparse
+
+from .confighelper import Confighelper
 
 helper = Confighelper()
 
@@ -38,8 +40,9 @@ SECRET_KEY = get_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (helper.get_setting('DEBUG') == 'True')
 
-ALLOWED_HOSTS = ['127.0.0.1']
-
+APPLICATION_URL = helper.get_setting('APPLICATION_URL', "http://localhost")
+ALLOWED_HOSTS = ['127.0.0.1', urlparse(APPLICATION_URL).hostname]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "https://127.0.0.1", APPLICATION_URL]
 
 # Application definition
 
