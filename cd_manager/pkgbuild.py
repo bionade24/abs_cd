@@ -20,21 +20,22 @@ class SRCINFO:
         Access the data with the object 'content'
         """
         return_dict = defaultdict(list)
-        for line in open(filepath, 'r'):
-            # ignore commented or empty lines
-            if line.startswith("#") or line == "\n":
-                continue
-            line = line.replace('\n', '')  # remove newlines and tabs
-            line = line.replace('\t', '')
-            array = line.split(" = ")
-            key = array[0]
-            value = array[1]
-            if key in single_value:
-                return_dict[key] = value
-            elif not return_dict.get(key):
-                return_dict[key] = [value]  # set new value
-            else:
-                return_dict[key].append(value)  # append to array
+        with open(filepath, 'r') as file:
+            for line in file:
+                # ignore commented or empty lines
+                if line.startswith("#") or line == "\n":
+                    continue
+                line = line.replace('\n', '')  # remove newlines and tabs
+                line = line.replace('\t', '')
+                array = line.split(" = ")
+                key = array[0]
+                value = array[1]
+                if key in single_value:
+                    return_dict[key] = value
+                elif not return_dict.get(key):
+                    return_dict[key] = [value]  # set new value
+                else:
+                    return_dict[key].append(value)  # append to array
         self._content = return_dict
 
     def getcontent(self):
