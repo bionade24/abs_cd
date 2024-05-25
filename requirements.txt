@@ -1,4 +1,4 @@
-Django>=3.2,<4
+Django>=4.2,<5
 django-sortable-listview==0.43
 django-crontab==0.7.1
 docker>=4.3.1
