@@ -22,13 +22,14 @@ class Confighelper:
     def get_setting(self, name: str, default=None) -> str:
         try:
             val = self.settings['DJANGO'][name]
+            setting_undefined = False
         except KeyError:
-            self.write_setting(name, '')
-            return self.get_setting(name, default)
-        if val == '' and default is not None:
-            val = default
-            self.write_setting(name, val)
-        return val
+            setting_undefined = True
+        finally:
+            if (setting_undefined or val == ""):
+                val = default or ""  # default if default else ""
+                self.write_setting(name, val)
+            return val
 
     def write_setting(self, name: str, value) -> None:
         with open(self.setting_path, 'w') as settingsfile:
