@@ -1,4 +1,4 @@
-Django<6
+Django[argon2]<6
 django-sortable-listview==0.43
 django-crontab==0.7.1
 docker>=4.3.1
