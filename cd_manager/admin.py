@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from django.conf.urls import url
+from django.urls import re_path
 from django.http.response import HttpResponseRedirect
 from multiprocessing import Process
 from cd_manager.models import Package, GpgKey
@@ -23,12 +23,12 @@ class PackageAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            url(
+            re_path(
                 r'^(?P<package_name>.+)/build/$',
                 self.admin_site.admin_view(self.build),
                 name='build',
             ),
-            url(
+            re_path(
                 r'^(?P<package_name>.+)/rebuildtree/$',
                 self.admin_site.admin_view(self.rebuildtree),
                 name='rebuildtree',
