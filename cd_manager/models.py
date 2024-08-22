@@ -140,8 +140,8 @@ class Package(models.Model):
             self.save()
         return scheduled_cd_pkgs
 
-    def rebuildtree(self, scheduled_cd_pkgs=[]):
-        self.build(force_rebuild=True, scheduled_cd_pkgs=scheduled_cd_pkgs)
+    def rebuildtree(self):
+        self.build(force_rebuild=True)
 
     def build_failure(self):  # TODO: Enum for multiple failure types
         self.build_status = 'FAILURE'  # TODO: More appropriate new error type
