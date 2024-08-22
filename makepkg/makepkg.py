@@ -108,6 +108,7 @@ class PackageSystem:
                 pkgbase.build_status = 'FAILURE'
 
         except docker.errors.ContainerError as e:
+            # TODO: Use pkgbase.build_error() func here, but how to handle buildoutput?
             pkgbase.build_status = 'FAILURE'
             container_output = e.container.logs()
             try:
