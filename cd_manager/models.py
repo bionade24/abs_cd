@@ -71,15 +71,15 @@ class Package(models.Model):
                 return redownload()
         return False
 
-    def build(self, user: User = AnonymousUser, force_rebuild=False, built_packages=None, repo_status_check=True):
+    def build(self, user: User = AnonymousUser, force_rebuild=False, scheduled_cd_pkgs=None, repo_status_check=True):
         # As the dependency graph is not necessarily acyclic we have to make sure to check each node
         # only once. Otherwise this might end up in an endless loop (meaning we will hit the
         # recursion limit)
-        if not built_packages:
-            built_packages = []
-        if self.name in built_packages:
-            return built_packages
-        built_packages.append(self.name)
+        if not scheduled_cd_pkgs:
+            scheduled_cd_pkgs = []
+        if self.name in scheduled_cd_pkgs:
+            return scheduled_cd_pkgs
+        scheduled_cd_pkgs.append(self.name)
 
         self.build_status = 'PREPARING'
         self.build_output = None
@@ -96,7 +96,12 @@ class Package(models.Model):
                     continue
                 dep_pkgobj = None
                 for potdep in query:
-                    potdep.pkgbuild_repo_status_check()  # For case only latest version of potdep satifies wanted_dep
+                    try:
+                        potdep.pkgbuild_repo_status_check()  # For case only latest version of potdep satifies wanted_dep
+                    except BaseException:  # TODO: Own exception system
+                        logger.exception(f"Git operations for pkg {dep_pkgobj.name} providing dependency \
+                                {wanted_dep.name} for pkg {self.name} failed:")
+                        self.build_failure()
                     if ALPMHelper.satifies_ver_req(wanted_dep, potdep.name):
                         dep_pkgobj = potdep
                         logger.debug(f"{potdep.name} satifies dependency requirement {wanted_dep.depends_entry} \
@@ -113,8 +118,13 @@ class Package(models.Model):
                     if self.build_status != 'WAITING':
                         self.build_status = 'WAITING'
                         self.save()
-                    built_packages = dep_pkgobj.build(user, force_rebuild=force_rebuild, built_packages=built_packages,
+                    try:
+                        scheduled_cd_pkgs = dep_pkgobj.build(user, force_rebuild=force_rebuild, scheduled_cd_pkgs=scheduled_cd_pkgs,
                                                       repo_status_check=False)
+                    except BaseException:  # TODO: Own exception system
+                        logger.exception(f"Building pkg {dep_pkgobj.name} providing dependency {wanted_dep.name} for pkg \
+                                {self.name} failed:")
+                        self.build_failure()
                 else:
                     logger.info(
                         f"Successful build of dependency {dep_pkgobj.name} is newer than 7 days. Skipping rebuild.")
@@ -128,10 +138,15 @@ class Package(models.Model):
         elif not self.aur_push and self.aur_push_output:
             self.aur_push_output = None
             self.save()
-        return built_packages
+        return scheduled_cd_pkgs
 
-    def rebuildtree(self, built_packages=[]):
-        self.build(force_rebuild=True, built_packages=built_packages)
+    def rebuildtree(self, scheduled_cd_pkgs=[]):
+        self.build(force_rebuild=True, scheduled_cd_pkgs=scheduled_cd_pkgs)
+
+    def build_failure(self):  # TODO: Enum for multiple failure types
+        self.build_status = 'FAILURE'  # TODO: More appropriate new error type
+        self.save()
+        raise RuntimeError(f"Building {self.name} failed.")
 
     def push_to_aur(self):
         path = os.path.join(
