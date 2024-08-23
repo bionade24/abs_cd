@@ -39,7 +39,8 @@ class TestALPMHelper(TestCase):
                 "lmdbxx"]
         for package in pkgs:
             Package.objects.create(name=package,
-                                   repo_url=f"file://{os.getcwd()}/tests/pkgbuild_remote/{package}",
+                                   # Git clone file://path/to/repo.bundle doesn't work
+                                   repo_url=f"{os.getcwd()}/tests/pkgbuild_remote/{package}.bundle",
                                    aur_push=False)
         print(Package.objects.all())
 
