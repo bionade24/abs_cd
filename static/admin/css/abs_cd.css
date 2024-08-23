@@ -480,6 +480,7 @@ ul.messagelist li {
     background: #dfd url(../img/icon-yes.svg) 40px 12px no-repeat;
     background-size: 16px auto;
     color: #333;
+    word-break: break-word;
 }
 
 ul.messagelist li.warning {
@@ -503,6 +504,7 @@ ul.messagelist li.error {
     border-radius: 4px;
     background-color: #fff;
     background-position: 5px 12px;
+    word-break: break-word;
 }
 
 ul.errorlist {
@@ -516,6 +518,7 @@ ul.errorlist li {
     font-size: 13px;
     display: block;
     margin-bottom: 4px;
+    overflow-wrap: break-word;
 }
 
 ul.errorlist li:first-child {
@@ -583,6 +586,11 @@ div.breadcrumbs a:focus, div.breadcrumbs a:hover {
     background: url(../img/icon-viewlink.svg) 0 1px no-repeat;
 }
 
+.hidelink {
+    padding-left: 16px;
+    background: url(../img/icon-hidelink.svg) 0 1px no-repeat;
+}
+
 .addlink {
     padding-left: 16px;
     background: url(../img/icon-addlink.svg) 0 1px no-repeat;
@@ -618,14 +626,6 @@ a.deletelink:focus, a.deletelink:hover {
     margin-top: -48px;
 }
 
-.form-row .object-tools {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    float: none;
-    height: 2em;
-    padding-left: 3.5em;
-}
-
 .object-tools li {
     display: block;
     float: left;
@@ -642,11 +642,11 @@ a.deletelink:focus, a.deletelink:hover {
     float: left;
     padding: 3px 12px;
     background: #333;
+    color: #fff;
     font-weight: 400;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #fff;
 }
 
 .object-tools a:focus, .object-tools a:hover {
@@ -681,6 +681,13 @@ table#change-history tbody th {
     width: 16em;
 }
 
+#change-history .paginator {
+    color: #666;
+    border-bottom: 1px solid var(--hairline-color);
+    background: var(--body-bg);
+    overflow: hidden;
+}
+
 /* PAGE STRUCTURE */
 
 #container {
@@ -693,10 +700,6 @@ table#change-history tbody th {
     height: 100%;
 }
 
-#container > div {
-    flex-shrink: 0;
-}
-
 #container > .main {
     display: flex;
     flex: 1 0 auto;
@@ -705,6 +708,20 @@ table#change-history tbody th {
 .main > .content {
     flex:  1 0;
     max-width: 100%;
+}
+
+.skip-to-content-link {
+    position: absolute;
+    top: -999px;
+    margin: 5px;
+    padding: 5px;
+    background: var(--body-bg);
+    z-index: 1;
+}
+
+.skip-to-content-link:focus {
+    left: 0px;
+    top: 0px;
 }
 
 #content {
@@ -767,10 +784,9 @@ table#change-history tbody th {
     padding: 10px 40px;
     background: #333;
     color: #08c;
-    overflow: hidden;
 }
 
-#header a:link, #header a:visited {
+#header a:link, #header a:visited, #logout-form button {
     color: #fff;
 }
 
@@ -782,21 +798,22 @@ table#change-history tbody th {
     float: left;
 }
 
-#branding h1 {
+#site-name {
     padding: 0;
     margin: 0 20px 0 0;
+    margin-inline-end: 20px;
     font-weight: 300;
     font-size: 24px;
     color: #08c;
 }
 
-#branding h1, #branding h1 a:link, #branding h1 a:visited {
+#site-name a:link, #site-name a:visited {
     color: #08c;
 }
 
 #branding h2 {
     padding: 0 10px;
-    font-size: 14px;
+    font-size: 0.875rem;
     margin: -8px 0 8px 0;
     font-weight: normal;
     color: #08c;
@@ -806,25 +823,43 @@ table#change-history tbody th {
     text-decoration: none;
 }
 
+#logout-form {
+    display: inline;
+}
+
+#logout-form button {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-family-primary);
+}
+
 #user-tools {
     float: right;
-    padding: 0;
     margin: 0 0 0 20px;
+    text-align: right;
+}
+
+#user-tools, #logout-form button{
+    padding: 0;
     font-weight: 300;
     font-size: 11px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    text-align: right;
 }
 
-#user-tools a {
+#user-tools a, #logout-form button {
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-#user-tools a:focus, #user-tools a:hover {
+#user-tools a:focus, #user-tools a:hover,
+#logout-form button:active, #logout-form button:hover {
     text-decoration: none;
-    border-bottom-color: #333;
-    color: #333;
+    border-bottom: 0;
+}
+
+#logout-form button:active, #logout-form button:hover {
+    margin-bottom: 1px;
 }
 
 /* SIDEBAR */
@@ -845,7 +880,7 @@ table#change-history tbody th {
 }
 
 #content-related h4 {
-    font-size: 13px;
+    font-size: 0.8125rem;
 }
 
 #content-related p {
@@ -891,10 +926,10 @@ table#change-history tbody th {
     vertical-align: middle;
     height: 15px;
     line-height: 15px;
-    background: #ddd;
     border-radius: 4px;
     padding: 10px 15px;
     color: #333;
+    background: #ddd;
     margin: 0 0 0 10px;
 }
 
@@ -915,4 +950,8 @@ table#change-history tbody th {
 
 .popup #header {
     padding: 10px 20px;
+}
+
+.theme-toggle {
+    visibility: hidden;
 }
