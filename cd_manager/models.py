@@ -64,7 +64,8 @@ class Package(models.Model):
                 remote.pull()
                 if head_before != repo.head.object.hexsha:
                     return True
-            except AssertionError:
+            except (AssertionError, ValueError) as e:
+                logger.exception(e)
                 return redownload()
             except GitCommandError as e:
                 logger.warning(package_src + "\n" + e.stderr)
