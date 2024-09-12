@@ -174,6 +174,9 @@ LOGGING = {
             'formatter': 'standard',
             'stream': 'ext://sys.stdout',
         },
+        "null": {
+            "class": "logging.NullHandler",
+        },
     },
     'root': {
         'handlers': ['console'],
@@ -188,6 +191,11 @@ LOGGING = {
         'makepkg': {
             'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.security.DisallowedHost': {
+            'handlers': ['null'],
+            'level': 'ERROR',
             'propagate': False,
         },
     }
