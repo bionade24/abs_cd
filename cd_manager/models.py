@@ -196,6 +196,14 @@ def remove_pkgbuild_and_archpkg(sender, instance, using, **kwargs):
             for file in glob.iglob(f"/repo/{pkg}-{pkg_version}-*.pkg.tar.*"):
                 logger.debug(f"Deleting {file}")
                 os.remove(file)
+    key = models.GpgKey.get_most_appropriate_key(AnonymousUser)
+    if key:
+        try:
+            key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMANDB_FILENAME))
+            key.sign(os.path.join(settings.PACMANREPO_PATH, settings.PACMAN_FILESDB_FILENAME))
+        except gpg.errors.GpgError:
+            logger.exception("Error while signing repo databases:")
+
 
 
 class GpgKey(models.Model):
