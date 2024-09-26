@@ -7,7 +7,7 @@ class CdManagerConfig(AppConfig):
     name = 'cd_manager'
 
     def ready(self):
-        if ("manage.py" not in sys.argv) or ("runserver" in sys.argv):
+        if (not any("manage.py" in e for e in sys.argv)) or ("runserver" in sys.argv):
             from cd_manager.models import Package
             pkgs = Package.objects.filter(build_status="BUILDING").union(
             Package.objects.filter(build_status="PREPARING"),
