@@ -11,7 +11,7 @@ Installation:
 Preperations: Docker and a webserver with reverse proxying capabilities, e. g. nginx  
   
 ```
-git clone --branch 2.0 --depth=1 https://github.com/bionade24/abs_cd.git
+git clone --branch <latest version number> --depth=1 https://github.com/bionade24/abs_cd.git
 cd abs_cd
 docker-compose build --no-cache
 docker-compose up -d
