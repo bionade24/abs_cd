@@ -1,5 +1,7 @@
 import logging
+import subprocess
 from pyalpm import vercmp
+from django.conf import settings
 from cd_manager.models import Package
 from cd_manager.alpm import ALPMHelper, PackageNotFoundError
 
@@ -33,3 +35,14 @@ def check_for_new_pkgversions():
 def update_pacmandbs():
     logger.info("Updating pacman databases.")
     ALPMHelper().update_syncdbs()
+
+def clean_pacman_cache():
+    logger.info("Start cleaning pacman cache dir.")
+    try:
+        output = subprocess.run(['yes | /usr/bin/pacman -Sccq'], shell=True, stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.PIPE, cwd=settings.PACMANREPO_PATH) \
+                                    .stderr.decode('UTF-8').strip('\n')
+        if output:
+            logger.warning(output)
+    except subprocess.CalledProcessError as e:
+        logger.exception(e)
