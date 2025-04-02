@@ -117,6 +117,7 @@ PASSWORD_HASHERS = [
 CRONJOBS = [
     ('0 0 * * *', 'cd_manager.cron.update_pacmandbs'),
     ('30 0 * * *', 'cd_manager.cron.check_for_new_pkgversions'),
+    ('0 12 1 * *', 'cd_manager.cron.clean_pacman_cache'),
 ]
 
 

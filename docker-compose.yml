@@ -15,5 +15,6 @@ services:
       - 'local-repo:/repo'
       - '/var/local/abs_cd/packages:/var/packages'
       - '/var/local/abs_cd/.gnupg:/root/.gnupg'
+      - '/var/cache/pacman:/var/cache/pacman'
 volumes:
   local-repo:
