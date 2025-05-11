@@ -154,9 +154,15 @@ PKGBUILDREPOS_PATH = "/var/packages"
 PKGBUILDREPOS_HOST_PATH = helper.get_setting('PKGBUILDREPOS_HOST_PATH', '/var/local/abs_cd/packages')
 PACMAN_CONFIG_PATH = "/etc/pacman.conf"
 PACMANREPO_PATH = "/repo"
+
+# Set the following settings via the settings.ini
 PACMANREPO_HOST_PATH = helper.get_setting('PACMANREPO_HOST_PATH', 'Docker-volume')
 PACMANDB_FILENAME = helper.get_setting('PACMANREPO_NAME', "abs_cd-local") + ".db.tar.zst"
 PACMAN_FILESDB_FILENAME = helper.get_setting('PACMANREPO_NAME', "abs_cd-local") + ".files.tar.zst"
+
+D_MEM_LIMIT = helper.get_setting('BUILDCONTAINER_MEMORY_LIMIT', '8G')
+D_SWAP_LIMIT = helper.get_setting('BUILDCONTAINER_SWAP_LIMIT', '8G')
+D_CPU_SHARES = int(helper.get_setting('BUILDCONTAINER_CPU_SHARES', '128'))
 
 LOGGING = {
     'version': 1,
