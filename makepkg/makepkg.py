@@ -65,7 +65,8 @@ class PackageSystem:
             container_name = f'mkpkg_{pkgbase.name}_{datetime.now().microsecond}'
             container_output = \
                 Connection().containers.run(image=BUILDCONT_IMG, command=(makepkg_args),
-                                            remove=False, mem_limit='8G', memswap_limit='8G', cpu_shares=128,
+                                            remove=False, mem_limit=settings.D_MEM_LIMIT, memswap_limit=settings.D_SWAP_LIMIT,
+                                            cpu_shares=settings.D_CPU_SHARES,
                                             volumes={os.path.join(settings.PKGBUILDREPOS_HOST_PATH, pkgbase.name):
                                                      {'bind': '/src', 'mode': 'ro'},
                                                      get_pacmanrepo_host_path():

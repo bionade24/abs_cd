@@ -6,3 +6,6 @@ docker_socket = unix://var/run/docker.sock
 pkgbuildrepos_host_path = /var/local/abs_cd/packages
 pacmanrepo_host_path = Docker-volume
 pacmanrepo_name = abs_cd-local
+buildcontainer_memory_limit = 8G
+buildcontainer_swap_limit = 8G
+buildcontainer_cpu_shares = 128
