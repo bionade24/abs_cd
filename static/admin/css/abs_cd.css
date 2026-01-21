@@ -160,7 +160,8 @@ p img, h1 img, h2 img, h3 img, h4 img, td img {
 
 .admin_option {
     color: #FFF;
-    padding: 3em;
+    padding: 1em;
+    display: inline;
 }
 
 /* TABLES */
@@ -954,4 +955,8 @@ table#change-history tbody th {
 
 .theme-toggle {
     visibility: hidden;
+}
+
+#menu ul {
+    list-style: none;
 }

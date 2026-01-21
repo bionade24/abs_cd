@@ -11,6 +11,11 @@
 
 {% block footer %}
 {% if has_permission %}
-<p class="admin_option"><a class="button" href="{% url 'admin:abs_cd_log' %}">ABS_CD log</a></p>
+<div id="admin_option_list">
+    <ul>
+        <li class="admin_option"><a class="button" href="{% url 'admin:abs_cd_log' %}">ABS_CD log</a></li>
+        <li class="admin_option"><a class="button" href="{% url 'admin:rebuild_all_pkgs' %}">Rebuild all pkgs</a></li>
+    </ul>
+</div>
 {% endif %}
 {% endblock %}
