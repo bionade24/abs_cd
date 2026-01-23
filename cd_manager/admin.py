@@ -1,14 +1,15 @@
+import multiprocessing as mp
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.urls import re_path
 from django.http.response import HttpResponseRedirect
-from multiprocessing import Process
 from cd_manager.models import Package, GpgKey
 from cd_manager.forms import GpgKeySubmitForm
 from cd_manager.admin_site import site
 
 
+mp.set_start_method('fork')
 # Register your models here.
 
 
@@ -49,13 +50,13 @@ class PackageAdmin(admin.ModelAdmin):
     def build(self, request, package_name, *args, **kwargs):
         request.current_app = self.admin_site.name
         pkg = Package.objects.get(name=package_name)
-        Process(target=pkg.build, args=[request.user]).start()
+        mp.Process(target=pkg.build, args=[request.user]).start()
         return HttpResponseRedirect('/admin/cd_manager/package/?o=2.1')
 
     def rebuildtree(self, request, package_name, *args, **kwargs):
         request.current_app = self.admin_site.name
         pkg = Package.objects.get(name=package_name)
-        Process(target=pkg.rebuildtree).start()
+        mp.Process(target=pkg.rebuildtree).start()
         return HttpResponseRedirect('/admin/cd_manager/package/?o=2.1')
 
 
